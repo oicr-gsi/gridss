@@ -4,21 +4,27 @@ workflow gridss {
   input {
     File tumorBam
     File tumorBai
-    File normalBam
-    File normalBai
+    File normBam
+    File normBai
+    String normName = basename("~{normBam}", ".filter.deduped.realigned.recalibrated.bam")
+    String tumorName = basename("~{tumorBam}", ".filter.deduped.realigned.recalibrated.bam")
   }
 
   parameter_meta {
-    tumorBam: "Input tumor file (bam or sam)."
-    normalBam: "Input normal file (bam or sam)."
+    tumorBam: "Input tumor file (bam)"
+    tumorBai: "Input tumor file index (bai)"
+    normBam: "Input normal file (bam)"
+    normBai: "Input normal file index (bai)"
   }
 
-  call gridss {
+  call call_SVs {
     input:
-      tumorBam = tumorBam
-      normalBam = normalBam
-      tumorBai = tumorBai
-      normalBai = normalBai
+      tumorBam = tumorBam,
+      normBam = normBam,
+      tumorBai = tumorBai,
+      normBai = normBai,
+      normName = normName,
+      tumorName = tumorName
   }
 
   meta {
@@ -37,19 +43,21 @@ workflow gridss {
   }
 
   output {
-      File structuralVcf = "~{outputVcf}.allocated.vcf"
+      File structuralVcf = "~{tumorName}.allocated.vcf"
   }
 }
 
-task gridss {
+task call_SVs {
   input {
     File normBam
     File normBai
     File tumorBam
     File tumorBai
+    String normName
+    String tumorName
     String modules = "argparser stringdist structuravariantannotation rtracklayer gridss/2.13.2 hg38/p12 hmftools/1.0 kraken2 bcftools hmftools-data/hg38"
-    String refFasta = "${HMFTOOLS_DATA_ROOT}/hg38_random.fa"
-    String gridssScript = "${GRIDSS_ROOT}/gridss --jar ${GRIDSS_ROOT}/gridss-2.13.2-gridss-jar-with-dependencies.jar"
+    String refFasta = "$HMFTOOLS_DATA_ROOT/hg38_random.fa"
+    String gridssScript = "$GRIDSS_ROOT/gridss --jar $GRIDSS_ROOT/gridss-2.13.2-gridss-jar-with-dependencies.jar"
     Int threads = 8
     Int memory = 50
     Int timeout = 100
@@ -73,6 +81,6 @@ task gridss {
   }
 
   output {
-    File structuralVcf = "~{outputVcf}.allocated.vcf"
+    File structuralVcf = "~{tumorName}.allocated.vcf"
   }
 }
