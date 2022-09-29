@@ -73,7 +73,7 @@ task call_SVs {
       --output ~{tumorName} \
       ~{normBam} ~{tumorBam}
 
-    mv ~{tumorName}/*.vcf .
+    #mv ~{tumorName}/*.vcf ~{tumorName}.allocated.vcf
 
   >>>
 
