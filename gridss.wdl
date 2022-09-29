@@ -47,7 +47,7 @@ workflow gridss {
   }
 }
 
-task call_SVs {
+task call {
   input {
     File normBam
     File normBai
