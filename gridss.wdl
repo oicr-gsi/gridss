@@ -17,7 +17,7 @@ workflow gridss {
     normBai: "Input normal file index (bai)"
   }
 
-  call call_SVs {
+  call call {
     input:
       tumorBam = tumorBam,
       normBam = normBam,
