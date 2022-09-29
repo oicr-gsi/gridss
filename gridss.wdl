@@ -17,7 +17,7 @@ workflow gridss {
     normBai: "Input normal file index (bai)"
   }
 
-  call call {
+  call call_SVs {
     input:
       tumorBam = tumorBam,
       normBam = normBam,
@@ -47,7 +47,7 @@ workflow gridss {
   }
 }
 
-task call {
+task call_SVs {
   input {
     File normBam
     File normBai
@@ -73,7 +73,7 @@ task call {
       --output ~{tumorName} \
       ~{normBam} ~{tumorBam}
 
-    mv ~{tumorName}/*.vcf
+    mv ~{tumorName}/*.vcf ~{tumorName}.allocated.vcf
 
   >>>
 
