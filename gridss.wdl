@@ -73,7 +73,7 @@ task call_SVs {
       --output ~{tumorName} \
       ~{normBam} ~{tumorBam}
 
-    mv ~{tumorName}/*.vcf ~{tumorName}.allocated.vcf
+    #mv ~{tumorName}/*.vcf ~{tumorName}.allocated.vcf
 
   >>>
 
@@ -85,6 +85,6 @@ task call_SVs {
   }
 
   output {
-    File structuralVcf = "~{tumorName}.allocated.vcf"
+    File structuralVcf = "~/COLO829_0001_Lu_P_WG.gridss.working/{tumorName}.allocated.vcf"
   }
 }
