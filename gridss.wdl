@@ -66,7 +66,7 @@ task call_SVs {
   command <<<
     set -euo pipefail
 
-    mkdir ~{tumorName}
+    #mkdir ~{tumorName}
 
     ~{gridssScript} \
       --reference ~{refFasta} \
@@ -85,6 +85,6 @@ task call_SVs {
   }
 
   output {
-    File structuralVcf = "~/COLO829_0001_Lu_P_WG.gridss.working/{tumorName}.allocated.vcf"
+    File structuralVcf = "~{tumorName}.gridss.working/~{tumorName}.allocated.vcf"
   }
 }
