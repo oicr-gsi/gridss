@@ -70,8 +70,7 @@ task call_SVs {
 
     ~{gridssScript} \
       --reference ~{refFasta} \
-      #--output ~{tumorName} \
-      --output ~{tumorName}.gridss.working/~{tumorName}.allocated.vcf \
+      --output ~{tumorName}.gridss.working/ \
       ~{normBam} ~{tumorBam}
 
     #mv ~{tumorName}/*.vcf ~{tumorName}.allocated.vcf
