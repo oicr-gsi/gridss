@@ -43,7 +43,7 @@ workflow gridss {
   }
 
   output {
-      File structuralVcf = "~{tumorName}.allocated.vcf"
+      File structuralVcf = "~{tumorName}.gridss.working/~{tumorName}.allocated.vcf"
   }
 }
 
@@ -70,7 +70,8 @@ task call_SVs {
 
     ~{gridssScript} \
       --reference ~{refFasta} \
-      --output ~{tumorName} \
+      #--output ~{tumorName} \
+      --output ~{tumorName}.gridss.working/~{tumorName}.allocated.vcf \
       ~{normBam} ~{tumorBam}
 
     #mv ~{tumorName}/*.vcf ~{tumorName}.allocated.vcf
