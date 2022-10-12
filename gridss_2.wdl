@@ -7,7 +7,7 @@ workflow gridss {
     File normBam
     File normBai
     String normName = basename("~{normBam}", "_ch1.bam")
-    String tumorName = basename("~{tumorBam}", "_ch1.bam)
+    String tumorName = basename("~{tumorBam}", "_ch1.bam")
   }
 
   parameter_meta {
