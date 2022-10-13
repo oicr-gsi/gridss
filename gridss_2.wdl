@@ -66,14 +66,14 @@ task call_SVs {
   command <<<
     set -euo pipefail
 
-    mkdir ~{tumorName}
+    #mkdir ~{tumorName}
 
     ~{gridssScript} \
       --reference ~{refFasta} \
       --output ~{tumorName}.allocated.vcf \
       ~{normBam} ~{tumorBam}
 
-    mv ~{tumorName}.allocated.vcf ..~{tumorName}/~{tumorName}.vcf
+    #mv ~{tumorName}.allocated.vcf ~{tumorName}/~{tumorName}.vcf
 
   >>>
 
