@@ -6,8 +6,8 @@ workflow gridss {
     File tumorBai
     File normBam
     File normBai
-    String normName = basename("~{normBam}", "_ch1.bam")
-    String tumorName = basename("~{tumorBam}", "_ch1.bam")
+    String normName = basename("~{normBam}", "_ch21.bam")
+    String tumorName = basename("~{tumorBam}", "_ch21.bam")
   }
 
   parameter_meta {
@@ -43,7 +43,7 @@ workflow gridss {
   }
 
   output {
-      File structuralVcf = "~{tumorName}.allocated.vcf"
+      File structuralVcf = "~{tumorName}.gridss.working/~{tumorName}.allocated.vcf"
   }
 }
 
@@ -66,14 +66,14 @@ task call_SVs {
   command <<<
     set -euo pipefail
 
-    #mkdir ~{tumorName}
+    mkdir ~{tumorName}
 
     ~{gridssScript} \
       --reference ~{refFasta} \
       --output ~{tumorName}.gridss.working/~{tumorName}.allocated.vcf \
       ~{normBam} ~{tumorBam}
 
-    #mv ~{tumorName}/*.vcf ~{tumorName}.allocated.vcf
+    mv ~{tumorName}.gridss.working/~{tumorName}.allocated.vcf  ~{tumorName}
 
   >>>
 
@@ -85,6 +85,6 @@ task call_SVs {
   }
 
   output {
-    File structuralVcf = "~{tumorName}.allocated.vcf"
+    File structuralVcf = "~{tumorName}.gridss.working/~{tumorName}.allocated.vcf"
   }
 }
