@@ -1,0 +1,15 @@
+{
+  "arguments": ...,
+  "description": "...",
+  "engineArguments": {},
+  "id": "...",
+  "metadata": ...,
+  "validators": [
+     {
+      "metrics_calculate": "@CHECKOUT@/calculate.sh",
+      "metrics_compare": "@CHECKOUT@/compare.sh",
+      "output_metrics": "/.mounts/labs/gsi/testdata/myworkflow/output_metrics/....metrics",
+      "type": "script"
+     }
+   ]
+}
