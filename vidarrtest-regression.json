@@ -1,9 +1,9 @@
 {
-  "arguments": ...,
-  "description": "...",
+  "arguments": "/u/wytong/gridss_test/test.json",
+  "description": "Test for gridss",
   "engineArguments": {},
-  "id": "...",
-  "metadata": ...,
+  "id": "TEST",
+  "metadata": "TEST",
   "validators": [
      {
       "metrics_calculate": "@CHECKOUT@/calculate.sh",
