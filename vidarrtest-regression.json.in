@@ -52,6 +52,8 @@
 	  },
 	  "gridss.call_SVs.normName" : "COLO829_0001_Ly_P_WG",
 	  "gridss.call_SVs.tumorName" : "COLO829_0001_Lu_P_WG",
+	  "gridss.normName" : "COLO829_0001_Ly_P_WG",
+	  "gridss.tumorName" : "COLO829_0001_Lu_P_WG",
 	  "gridss.call_SVs.modules": "argparser stringdist structuravariantannotation rtracklayer gridss/2.13.2 hg38/p12 hmftools/1.0 kraken2 bcftools hmftools-data/hg38",
 	  "gridss.call_SVs.refFasta": "$HMFTOOLS_DATA_ROOT/hg38_random.fa",
 	  "gridss.call_SVs.gridssScript": "$GRIDSS_ROOT/gridss --jar $GRIDSS_ROOT/gridss-2.13.2-gridss-jar-with-dependencies.jar",
