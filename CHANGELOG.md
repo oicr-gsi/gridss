@@ -10,8 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - CHANGELOG.md
 - vidarrbuild.json
-- vidarrtest-regression.json.in
+- vidarrtest-regression.json
 - Jenkinsfile
 
+## [0.0.1] - 2022-10-31
+### Added
+- tests/compare.sh
+- tests/calculate.sh
+
+### Changed
+- renamed vidarrtest-regression.json to vidarrtest-regression.json.in
 
 [Unreleased]:
