@@ -56,7 +56,7 @@
 	  "gridss.call_SVs.refFasta": "$HMFTOOLS_DATA_ROOT/hg38_random.fa",
 	  "gridss.call_SVs.gridssScript": "$GRIDSS_ROOT/gridss --jar $GRIDSS_ROOT/gridss-2.13.2-gridss-jar-with-dependencies.jar",
 	  "gridss.call_SVs.threads": null, 
-	  "gridss.call_SVs.jobMemory": null,
+	  "gridss.call_SVs.memory": null,
 	  "gridss.call_SVs.timeout": null 
 	  
 	},
@@ -64,14 +64,13 @@
 	  "engineArguments": {
 		"write_to_cache": false,
 		"read_from_cache": false
-
 	},
 	  "id": "gridss_test",
 	  "metadata": {
 	  	"gridss.structuralVcf": {
 	  		"contents": [
 	    		{
-	      			"outputDirectory": "@SCRATCH@/@DATE@_Workflow_gridss_test1_@JENKINSID@"
+	      			"outputDirectory": "@SCRATCH@/@DATE@_Workflow_gridss_@JENKINSID@"
 	    		}
   			],
 	  		"type": "ALL"
