@@ -1,9 +1,27 @@
 {
-  "arguments": "/u/wytong/gridss_test/test.json",
+  "arguments": {
+	  "contents": {
+	    "configuration": "/u/wytong/gridss_test/test.json",
+	    "externalIds": [
+	      {
+	        "id": "TEST",
+	        "provider": "TEST"
+	      }
+	    ]
+	  },
+	  "type": "EXTERNAL"
+},
   "description": "Test for gridss",
   "engineArguments": {},
-  "id": "TEST",
-  "metadata": "TEST",
+  "id": "TEST_gridss",
+  "metadata": {
+  "contents": [
+    {
+      "outputDirectory": "@SCRATCH@/@DATE@_Workflow_myworkflow_test1_@JENKINSID@"
+    }
+  ],
+  "type": "ALL"
+  },
   "validators": [
      {
       "metrics_calculate": "@CHECKOUT@/calculate.sh",
