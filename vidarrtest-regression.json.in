@@ -50,8 +50,6 @@
 		   	},
 		   	"type": "EXTERNAL"
 	  },
-	  "gridss.call_SVs.normName" : null,
-	  "gridss.call_SVs.tumorName" : null,
 	  "gridss.call_SVs.modules": "argparser stringdist structuravariantannotation rtracklayer gridss/2.13.2 hg38/p12 hmftools/1.0 kraken2 bcftools hmftools-data/hg38",
 	  "gridss.call_SVs.refFasta": "$HMFTOOLS_DATA_ROOT/hg38_random.fa",
 	  "gridss.call_SVs.gridssScript": "$GRIDSS_ROOT/gridss --jar $GRIDSS_ROOT/gridss-2.13.2-gridss-jar-with-dependencies.jar",
