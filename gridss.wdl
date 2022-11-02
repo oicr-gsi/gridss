@@ -43,7 +43,7 @@ workflow gridss {
   }
 
   output {
-      File structuralVcf = "~{tumorName}.allocated.vcf"
+      File structuralVcf = call_SVs.structuralVcf
   }
 }
 
