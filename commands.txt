@@ -1,0 +1,25 @@
+## Commands
+This section lists command(s) run by GRIDSS workflow
+
+GRIDSS is a module software suite containing tools useful for the detection of 
+genomic rearrangements. GRIDSS includes a genome-wide break-end assembler, as 
+well as a structural variation caller for Illumina sequencing data. GRIDSS 
+calls variants based on alignment-guided positional de Bruijn graph genome-wide
+break-end assembly, split read, and read pair evidence.
+
+GRIDSS makes extensive use of the standard tags defined by SAM specifications. 
+Due to the modular design, any step (such as split read identification) can be
+replaced by another implementation that also outputs using the standard tags. 
+It is hoped that GRIDSS can serve as an exemplar modular structural variant 
+pipeline designed for interoperability with other tools.
+
+```
+    set -euo pipefail
+
+    GRIDSS_SCRIPT
+    -b BLACKLIST (optional)
+    --reference REF_FASTA
+    --jobnodes THREADS
+    --output OUTPUT_PREFIX.allocated.vcf \
+    NORM_BAM TUMOR_BAM
+```

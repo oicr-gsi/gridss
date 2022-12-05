@@ -82,7 +82,6 @@ task call_SVs {
 
     ~{gridssScript} \
     ~{"-b" + blacklist} \
-    --jvmheap ~{memory - 20} \
     --reference ~{refFasta} \
     --jobnodes ~{threads} \
     --output ~{outputFileNamePrefix}.allocated.vcf \
