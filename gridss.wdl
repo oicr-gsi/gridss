@@ -6,8 +6,7 @@ workflow gridss {
     File tumorBai
     File normBam
     File normBai
-    String normName = basename("~{normBam}", ".filter.deduped.realigned.recalibrated.bam")
-    String tumorName = basename("~{tumorBam}", ".filter.deduped.realigned.recalibrated.bam")
+    String outputFileNamePrefix = basename("~{tumorBam}", ".filter.deduped.realigned.recalibrated.bam")
   }
 
   parameter_meta {
@@ -15,6 +14,7 @@ workflow gridss {
     tumorBai: "Input tumor file index (bai)"
     normBam: "Input normal file (bam)"
     normBai: "Input normal file index (bai)"
+    outputFileNamePrefix: "Output file prefix"
   }
 
   call call_SVs {
@@ -23,8 +23,7 @@ workflow gridss {
       normBam = normBam,
       tumorBai = tumorBai,
       normBai = normBai,
-      normName = normName,
-      tumorName = tumorName
+      outputFileNamePrefix = outputFileNamePrefix
   }
 
   meta {
@@ -32,10 +31,10 @@ workflow gridss {
     email: "fbeaudry@oicr.on.ca"
     description: "performs somatic genomic rearrangement detection and classification"
     dependencies: [
-    {
-      name: "GRIDSS",
-      url: "https://github.com/PapenfussLab/gridss"
-    }
+      {
+        name: "GRIDSS",
+        url: "https://github.com/PapenfussLab/gridss"
+      }
     ]
     output_meta: {
       structuralVcf : "Structural Variant .vcf file"
@@ -43,7 +42,7 @@ workflow gridss {
   }
 
   output {
-      File structuralVcf = call_SVs.structuralVcf
+    File structuralVcf = call_SVs.structuralVcf
   }
 }
 
@@ -53,28 +52,41 @@ task call_SVs {
     File normBai
     File tumorBam
     File tumorBai
-    String normName
-    String tumorName
-    String modules = "argparser stringdist structuravariantannotation rtracklayer gridss/2.13.2 hg38/p12 hmftools/1.0 kraken2 bcftools hmftools-data/hg38"
+    String? blacklist
+    String modules = "argparser/2.1.3 stringdist/0.9.8 structuravariantannotation/1.10.1 rtracklayer/1.54.0 gridss/2.13.2 hg38/p12 hmftools/1.0 kraken2/2.0.8 bcftools/1.9 hmftools-data/hg38"
     String refFasta = "$HMFTOOLS_DATA_ROOT/hg38_random.fa"
     String gridssScript = "$GRIDSS_ROOT/gridss --jar $GRIDSS_ROOT/gridss-2.13.2-gridss-jar-with-dependencies.jar"
+    String outputFileNamePrefix
     Int threads = 8
     Int memory = 50
     Int timeout = 100
   }
 
+  parameter_meta {
+    normBam: "normal input .bam file"
+    tumorBam: "tumor input .bam file"
+    normBai: "normal input .bai file"
+    tumorBai: "tumor input .bai file"
+    blacklist: "bed file with regions to ignore"
+    refFasta: "Reference FASTA file"
+    gridssScript: "Script to run GRIDSS"
+    outputFileNamePrefix: "Output prefix for vcf file"
+    modules: "Required environment modules"
+    memory: "Memory allocated for this job (GB)"
+    threads: "Requested CPU threads"
+    timeout: "Hours before task timeout"
+  }
+
   command <<<
     set -euo pipefail
 
-    #mkdir ~{tumorName}
-
     ~{gridssScript} \
-      --reference ~{refFasta} \
-      --output ~{tumorName}.allocated.vcf \
-      ~{normBam} ~{tumorBam}
-
-    #mv ~{tumorName}/*.vcf ~{tumorName}.allocated.vcf
-
+    ~{"-b" + blacklist} \
+    --jvmheap ~{memory - 20} \
+    --reference ~{refFasta} \
+    --jobnodes ~{threads} \
+    --output ~{outputFileNamePrefix}.allocated.vcf \
+    ~{normBam} ~{tumorBam}
   >>>
 
   runtime {
@@ -84,7 +96,13 @@ task call_SVs {
     timeout: "~{timeout}"
   }
 
+  meta {
+    output_meta: {
+      structuralVcf: "Final vcf with structural variants"
+    }
+  }
+
   output {
-    File structuralVcf = "~{tumorName}.allocated.vcf"
+    File structuralVcf = "~{outputFileNamePrefix}.allocated.vcf"
   }
 }

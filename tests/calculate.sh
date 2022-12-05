@@ -7,4 +7,4 @@ set -o pipefail
 cd $1
 
 #find all files, return their md5sums to std out
-find . -xtype f -exec md5sum {} +
+for v in *.vcf;do cat $v | md5sum;done | sort -V

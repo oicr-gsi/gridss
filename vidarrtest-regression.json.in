@@ -1,91 +1,87 @@
 [
-	{
-  		"arguments": {
-			"gridss.tumorBai": {
-			  "contents": {
-			    "configuration": "/.mounts/labs/CGI/scratch/fbeaudry/SV_testing/COLO829/COLO829_0001_Lu_P_WG.filter.deduped.realigned.recalibrated.bai",
-			    "externalIds": [
-			      {
-			        "id": "TEST",
-			        "provider": "TEST"
-			      }
-			    ]
-			  },
-			  "type": "EXTERNAL"
-	  },
-		  "gridss.tumorBam": {
-			  "contents": {
-			    "configuration": "/.mounts/labs/CGI/scratch/fbeaudry/SV_testing/COLO829/COLO829_0001_Lu_P_WG.filter.deduped.realigned.recalibrated.bam",
-			    "externalIds": [
-			      {
-			        "id": "TEST",
-			        "provider": "TEST"
-			      }
-			    ]
-			  },
-			  "type": "EXTERNAL"
-		  },
-		  "gridss.normBai": {
-			  "contents": {
-			  	"configuration": "/.mounts/labs/CGI/scratch/fbeaudry/SV_testing/COLO829/COLO829_0001_Ly_R_WG.filter.deduped.realigned.recalibrated.bai",
-			  	"externalIds": [
-			      {
-			        "id": "TEST",
-			        "provider": "TEST"
-			        }
-		        ]
-		  	},
-		  	"type": "EXTERNAL"
-	  
-	  	},
-	  	"gridss.normBam": {
-			  "contents": {
-			    "configuration": "/.mounts/labs/CGI/scratch/fbeaudry/SV_testing/COLO829/COLO829_0001_Ly_R_WG.filter.deduped.realigned.recalibrated.bam",
-			    "externalIds": [
-			      {
-			        "id": "TEST",
-			        "provider": "TEST"
-			      	}
-			   	]
-		   	},
-		   	"type": "EXTERNAL"
-	  },
-	  "gridss.call_SVs.normName" : "COLO829_0001_Ly_P_WG",
-	  "gridss.call_SVs.tumorName" : "COLO829_0001_Lu_P_WG",
-	  "gridss.normName" : "COLO829_0001_Ly_P_WG",
-	  "gridss.tumorName" : "COLO829_0001_Lu_P_WG",
-	  "gridss.call_SVs.modules": "argparser stringdist structuravariantannotation rtracklayer gridss/2.13.2 hg38/p12 hmftools/1.0 kraken2 bcftools hmftools-data/hg38",
-	  "gridss.call_SVs.refFasta": "$HMFTOOLS_DATA_ROOT/hg38_random.fa",
-	  "gridss.call_SVs.gridssScript": "$GRIDSS_ROOT/gridss --jar $GRIDSS_ROOT/gridss-2.13.2-gridss-jar-with-dependencies.jar",
-	  "gridss.call_SVs.threads": null, 
-	  "gridss.call_SVs.memory": null,
-	  "gridss.call_SVs.timeout": null 
-	  
-	},
-	  "description": "gridss workflow test",
-	  "engineArguments": {
-		"write_to_cache": false,
-		"read_from_cache": false
-	},
-	  "id": "gridss_test",
-	  "metadata": {
-	  	"gridss.structuralVcf": {
-	  		"contents": [
-	    		{
-	      			"outputDirectory": "@SCRATCH@/@DATE@_Workflow_gridss_@JENKINSID@"
-	    		}
-  			],
-	  		"type": "ALL"
-			}
-		},
-  		"validators": [
-     		{
-		      "metrics_calculate": "@CHECKOUT@/tests/calculate.sh",
-		      "metrics_compare": "@CHECKOUT@/tests/compare.sh",
-		      "output_metrics": "/.mounts/labs/gsi/testdata/gridss/1.0/output_metrics/gridss_test.metrics",
-		      "type": "script"
-     		}
-		]
-   
-	}
+  {
+    "arguments": {
+       "gridss.tumorBai": {
+          "contents": {
+             "configuration": "/.mounts/labs/CGI/scratch/fbeaudry/SV_testing/COLO829/COLO829_0001_Lu_P_WG.filter.deduped.realigned.recalibrated.bai",
+                "externalIds": [
+                  {
+                    "id": "TEST",
+                    "provider": "TEST"
+                  }
+                ]
+          },
+          "type": "EXTERNAL"
+       },
+       "gridss.tumorBam": {
+          "contents": {
+             "configuration": "/.mounts/labs/CGI/scratch/fbeaudry/SV_testing/COLO829/COLO829_0001_Lu_P_WG.filter.deduped.realigned.recalibrated.bam",
+                "externalIds": [
+                  {
+                    "id": "TEST",
+                    "provider": "TEST"
+                  }
+                ]
+          },
+          "type": "EXTERNAL"
+       },
+       "gridss.normBai": {
+          "contents": {
+             "configuration": "/.mounts/labs/CGI/scratch/fbeaudry/SV_testing/COLO829/COLO829_0001_Ly_R_WG.filter.deduped.realigned.recalibrated.bai",
+                "externalIds": [
+                  {
+                    "id": "TEST",
+                    "provider": "TEST"
+                  }
+                ]
+          },
+          "type": "EXTERNAL"
+       },
+       "gridss.normBam": {
+          "contents": {
+             "configuration": "/.mounts/labs/CGI/scratch/fbeaudry/SV_testing/COLO829/COLO829_0001_Ly_R_WG.filter.deduped.realigned.recalibrated.bam",
+                "externalIds": [
+                  {
+                    "id": "TEST",
+                    "provider": "TEST"
+                  }
+                ]
+          },
+          "type": "EXTERNAL"
+      },
+      "gridss.outputFileNamePrefix": "COLO829_0001_Lu_P_WG",
+      "gridss.call_SVs.blacklist": null,
+      "gridss.call_SVs.tumorName" : null,
+      "gridss.call_SVs.modules": "argparser/2.1.3 stringdist/0.9.8 structuravariantannotation/1.10.1 rtracklayer/1.54.0 gridss/2.13.2 hg38/p12 hmftools/1.0 kraken2/2.0.8 bcftools/1.9 hmftools-data/hg38",
+      "gridss.call_SVs.refFasta": "$HMFTOOLS_DATA_ROOT/hg38_random.fa",
+      "gridss.call_SVs.gridssScript": "$GRIDSS_ROOT/gridss --jar $GRIDSS_ROOT/gridss-2.13.2-gridss-jar-with-dependencies.jar",
+      "gridss.call_SVs.threads": null, 
+      "gridss.call_SVs.memory": null,
+      "gridss.call_SVs.timeout": null 
+    },
+      "description": "gridss workflow test",
+      "engineArguments": {
+        "write_to_cache": false,
+        "read_from_cache": false
+    },
+      "id": "gridss_test",
+      "metadata": {
+          "gridss.structuralVcf": {
+              "contents": [
+                {
+                      "outputDirectory": "@SCRATCH@/@DATE@_Workflow_gridss_@JENKINSID@"
+                }
+              ],
+              "type": "ALL"
+            }
+      },
+      "validators": [
+         {
+          "metrics_calculate": "@CHECKOUT@/tests/calculate.sh",
+          "metrics_compare": "@CHECKOUT@/tests/compare.sh",
+          "output_metrics": "/.mounts/labs/gsi/testdata/gridss/1.0/output_metrics/gridss_test.metrics",
+          "type": "script"
+         }
+      ]
+   }
 ]
