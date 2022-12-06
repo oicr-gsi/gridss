@@ -3,7 +3,7 @@
     "arguments": {
        "gridss.tumorBai": {
           "contents": {
-             "configuration": "/.mounts/labs/CGI/scratch/fbeaudry/SV_testing/COLO829/COLO829_0001_Lu_P_WG.filter.deduped.realigned.recalibrated.bai",
+             "configuration": "/.mounts/labs/gsi/testdata/gridss/1.0/input_data/COLO829_0001_Lu_P_WG.fdrr.chr21.bam.bai",
                 "externalIds": [
                   {
                     "id": "TEST",
@@ -15,7 +15,7 @@
        },
        "gridss.tumorBam": {
           "contents": {
-             "configuration": "/.mounts/labs/CGI/scratch/fbeaudry/SV_testing/COLO829/COLO829_0001_Lu_P_WG.filter.deduped.realigned.recalibrated.bam",
+             "configuration": "/.mounts/labs/gsi/testdata/gridss/1.0/input_data/COLO829_0001_Lu_P_WG.fdrr.chr21.bam",
                 "externalIds": [
                   {
                     "id": "TEST",
@@ -27,7 +27,7 @@
        },
        "gridss.normBai": {
           "contents": {
-             "configuration": "/.mounts/labs/CGI/scratch/fbeaudry/SV_testing/COLO829/COLO829_0001_Ly_R_WG.filter.deduped.realigned.recalibrated.bai",
+             "configuration": "/.mounts/labs/gsi/testdata/gridss/1.0/input_data/COLO829_0001_Ly_R_WG.fdrr.chr21.bam.bai",
                 "externalIds": [
                   {
                     "id": "TEST",
@@ -39,7 +39,7 @@
        },
        "gridss.normBam": {
           "contents": {
-             "configuration": "/.mounts/labs/CGI/scratch/fbeaudry/SV_testing/COLO829/COLO829_0001_Ly_R_WG.filter.deduped.realigned.recalibrated.bam",
+             "configuration": "/.mounts/labs/gsi/testdata/gridss/1.0/input_data/COLO829_0001_Ly_R_WG.fdrr.chr21.bam",
                 "externalIds": [
                   {
                     "id": "TEST",
