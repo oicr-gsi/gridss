@@ -83,7 +83,6 @@ task call_SVs {
     ~{gridssScript} \
     ~{"-b" + blacklist} \
     --reference ~{refFasta} \
-    --jobnodes ~{threads} \
     --output ~{outputFileNamePrefix}.allocated.vcf \
     ~{normBam} ~{tumorBam}
   >>>
