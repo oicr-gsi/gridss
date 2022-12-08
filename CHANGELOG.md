@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - added parameter blacklist
 - removed tumor/normal name parameters, added outputFilePrefix
 - modified RT 
+- Split the workflow in parts to improve speed/reliability
 
 ## [Unreleased]
 
