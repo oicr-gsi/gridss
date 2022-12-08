@@ -106,10 +106,6 @@ Output | Type | Description
  
  This is a step of preprocessing inputs
  
-### Call SVs
- 
- Using pre-processed data call Structural Variants
- 
 ```
     GRIDSS_SCRIPT 
     -b BLACKLIST \
