@@ -13,6 +13,7 @@ if [[ $MATCH_RATIO>=90 ]];then
   exit 0
 else
   echo "Only $MATCH_RATIO% variants match, FAILED"
-  exit 1
 fi
+
+exit 1
 ~
