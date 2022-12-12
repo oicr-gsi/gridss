@@ -1,0 +1,115 @@
+[
+  {
+    "arguments": {
+       "gridss.tumorBai": {
+          "contents": {
+             "configuration": "/.mounts/labs/gsi/testdata/gridss/1.0/input_data/COLO829_0001_Lu_P_WG.fdrr.chr21.bam.bai",
+                "externalIds": [
+                  {
+                    "id": "TEST",
+                    "provider": "TEST"
+                  }
+                ]
+          },
+          "type": "EXTERNAL"
+       },
+       "gridss.tumorBam": {
+          "contents": {
+             "configuration": "/.mounts/labs/gsi/testdata/gridss/1.0/input_data/COLO829_0001_Lu_P_WG.fdrr.chr21.bam",
+                "externalIds": [
+                  {
+                    "id": "TEST",
+                    "provider": "TEST"
+                  }
+                ]
+          },
+          "type": "EXTERNAL"
+       },
+       "gridss.normBai": {
+          "contents": {
+             "configuration": "/.mounts/labs/gsi/testdata/gridss/1.0/input_data/COLO829_0001_Ly_R_WG.fdrr.chr21.bam.bai",
+                "externalIds": [
+                  {
+                    "id": "TEST",
+                    "provider": "TEST"
+                  }
+                ]
+          },
+          "type": "EXTERNAL"
+       },
+       "gridss.normBam": {
+          "contents": {
+             "configuration": "/.mounts/labs/gsi/testdata/gridss/1.0/input_data/COLO829_0001_Ly_R_WG.fdrr.chr21.bam",
+                "externalIds": [
+                  {
+                    "id": "TEST",
+                    "provider": "TEST"
+                  }
+                ]
+          },
+          "type": "EXTERNAL"
+      },
+      "gridss.assembleBam.blacklist": null,
+      "gridss.assembleBam.gridssScript": "$GRIDSS_ROOT/gridss --jar $GRIDSS_ROOT/gridss-2.13.2-gridss-jar-with-dependencies.jar",
+      "gridss.assembleBam.memory": null,
+      "gridss.assembleBam.modules": "gridss/2.13.2 hmftools-data/hg38",
+      "gridss.assembleBam.refFasta": "$HMFTOOLS_DATA_ROOT/hg38_random.fa",
+      "gridss.assembleBam.threads": null,
+      "gridss.assembleBam.timeout": null,
+      "gridss.assembleBam.workingDirNorm": null,
+      "gridss.assembleBam.workingDirTumr": null,
+      "gridss.assemblyChunks": null,
+      "gridss.callSvs.blacklist": null,
+      "gridss.callSvs.gridssScript": "$GRIDSS_ROOT/gridss --jar $GRIDSS_ROOT/gridss-2.13.2-gridss-jar-with-dependencies.jar",
+      "gridss.callSvs.memory": null,
+      "gridss.callSvs.modules": null,
+      "gridss.callSvs.overhead": null,
+      "gridss.callSvs.refFasta": "$HMFTOOLS_DATA_ROOT/hg38_random.fa",
+      "gridss.callSvs.threads": null,
+      "gridss.callSvs.timeout": null,
+      "gridss.callSvs.workingDirNorm": null,
+      "gridss.callSvs.workingDirTumr": null,
+      "gridss.outputFileNamePrefix": "TEST",
+      "gridss.preprocessNormal.blacklist": null,
+      "gridss.preprocessNormal.gridssScript": "$GRIDSS_ROOT/gridss --jar $GRIDSS_ROOT/gridss-2.13.2-gridss-jar-with-dependencies.jar",
+      "gridss.preprocessNormal.memory": null,
+      "gridss.preprocessNormal.modules": null,
+      "gridss.preprocessNormal.refFasta": "$HMFTOOLS_DATA_ROOT/hg38_random.fa",
+      "gridss.preprocessNormal.threads": null,
+      "gridss.preprocessNormal.timeout": null,
+      "gridss.preprocessNormal.workingDir": null,
+      "gridss.preprocessTumor.blacklist": null,
+      "gridss.preprocessTumor.gridssScript": "$GRIDSS_ROOT/gridss --jar $GRIDSS_ROOT/gridss-2.13.2-gridss-jar-with-dependencies.jar",
+      "gridss.preprocessTumor.memory": null,
+      "gridss.preprocessTumor.modules": null,
+      "gridss.preprocessTumor.refFasta": "$HMFTOOLS_DATA_ROOT/hg38_random.fa",
+      "gridss.preprocessTumor.threads": null,
+      "gridss.preprocessTumor.timeout": null,
+      "gridss.preprocessTumor.workingDir": null
+    },
+      "description": "gridss workflow test",
+      "engineArguments": {
+        "write_to_cache": false,
+        "read_from_cache": false
+    },
+      "id": "gridss_test",
+      "metadata": {
+          "gridss.structuralVcf": {
+              "contents": [
+                {
+                      "outputDirectory": "@SCRATCH@/@DATE@_Workflow_gridss_@JENKINSID@"
+                }
+              ],
+              "type": "ALL"
+            }
+      },
+      "validators": [
+         {
+          "metrics_calculate": "@CHECKOUT@/tests/calculate.sh",
+          "metrics_compare": "@CHECKOUT@/tests/compare.sh",
+          "output_metrics": "/.mounts/labs/gsi/testdata/gridss/1.0/output_metrics/gridss_test.metrics",
+          "type": "script"
+         }
+      ]
+   }
+]

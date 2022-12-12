@@ -1,0 +1,77 @@
+## Commands
+This section lists commands run by gridss workflow
+
+* Running GRIDSS
+
+perform joint SV calling on the tumour and normal. The workflow consists of three steps
+described below:
+
+## Preprocess
+
+This is a step of preprocessing inputs
+
+## Call SVs
+
+Using pre-processed data call Structural Variants
+
+```
+   GRIDSS_SCRIPT 
+   -b BLACKLIST \
+   -r REF_FASTA \
+   -s preprocess \
+   -t THREADS \
+   INPUT_BAM
+```
+
+## Assembly
+
+Assembly is performed in parallel on 10Mbase chunks. This step scales to 8 cores with peak memory usage of 31Gb
+and can be distributed across multiple nodes (using scatter)
+
+```
+    set -euo pipefail
+    mkdir WORKDIR_NORM WORKDIR_TUMOR
+    ln -s PROCESSED_NORMBAM -t WORKDIR_NORM
+    ln -s PROCESSED_NORMIDX -t WORKDIR_NORM
+    ln -s PROCESSED_TUMRBAM -t WORKDIR_TUMOR
+    ln -s PROCESSED_TUMRIDX -t WORKDIR_TUMOR
+
+    GRIDSS_SCRIPT
+    -b BLACKLIST \
+    -r REF_FASTA \
+    -t THREADS \
+    -s assemble \
+    -a assembly.bam \
+    --jobnodes JOB_NODES \
+    --jobindex JOB_INDEX \
+    NORM_BAM TUMOR_BAM
+```
+
+## Call SVs
+
+Using pre-processed data call Structural Variants
+
+```
+    set -euo pipefail
+    mkdir WORKDIR_NORM WORKDIR_TUMOR
+    ln -s PROCESSED_NORMBAM -t WORKDIR_NORM
+    ln -s PROCESSED_NORMIDX -t WORKDIR_NORM
+    ln -s PROCESSED_TUMRBAM -t WORKDIR_TUMOR
+    ln -s PROCESSED_TUMRIDX -t WORKDIR_TUMOR
+    mkdir assembly.bam.gridss.working
+    for f in ~{sep=' ' assembleChunks}
+    do
+      ln -s $f -t assembly.bam.gridss.working
+    done
+
+    GRIDSS_SCRIPT
+    -b BLACKLIST \
+    --jvmheap (MEMORY - OVERHEAD)g \
+    --otherjvmheap OVERHEADg \
+    --reference REF_FASTA \
+    -a assembly.bam \
+    -s assemble,call \
+    -t THREADS \
+    -o OUTPUT_PREFIX.allocated.vcf \
+    NORM_BAM TUMOR_BAM
+```
