@@ -1,6 +1,8 @@
 {
     "names": [
-        "gridss"
+        "gridss",
+        "gridss_matched_by_tumor_group",
+        "gridss_matched"
     ],
     "wdl": "gridss.wdl"
 }
