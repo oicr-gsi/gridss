@@ -23,6 +23,8 @@ workflow gridss {
 
   call svprep {
     input:
+    tumorname = tumorName,
+    normalname = normalName,
     tumorBam = tumorBam,
     tumorBai = tumorBai,
     normBam = normBam,
@@ -31,14 +33,14 @@ workflow gridss {
   
   call preprocessInputs as preprocessNormal {
     input:
-      inputBam = normBam,
-      inputBai = normBai
+      samplename = normalName,
+      inputBam = svprep.prepd_normal
   }
 
   call preprocessInputs as preprocessTumor {
     input:
-      inputBam = tumorBam,
-      inputBai = tumorBai,
+      samplename = tumorName,
+      inputBam = svprep.prepd_tumor
   }
 
   scatter (i in range(assemblyChunks)) {
@@ -48,6 +50,8 @@ workflow gridss {
         normBai = normBai,   
         tumorBam = tumorBam,
         tumorBai = tumorBai,
+        normalName = normalName,
+        tumorName = tumorName,
         processedNormBam = preprocessNormal.preprocessedBam,
         processedNormCsi = preprocessNormal.preprocessedIdx,
         processedTumrBam = preprocessTumor.preprocessedBam,
@@ -59,6 +63,8 @@ workflow gridss {
 
   call callSvs {
     input:
+      normalName = normalName,
+      tumorName = tumorName,
       tumorBam = tumorBam,
       normBam = normBam,
       tumorBai = tumorBai,
@@ -98,6 +104,7 @@ workflow gridss {
 # =================================
 # Job to filter bams before preprocess
 # =================================
+
 task svprep {
   input {
     String tumorname
@@ -107,7 +114,7 @@ task svprep {
     File normalbam
     File normalbai
     String blocklist = "$HMFTOOLS_DATA_ROOT/sv/gridss_blacklist.38.bed.gz"
-    String modules = "hmftools/1.1 hmftools-data/53138 "
+    String modules = "hmftools/1.1 hmftools-data/53138 hg38/p12"
     String refFasta = "$HG38_ROOT/hg38_random.fa"
     String refFastaVersion = "38"
     String svprepScript = "java -jar $HMFTOOLS_ROOT/svprep.jar"
@@ -117,6 +124,7 @@ task svprep {
     Int memory = 16
     Int timeout = 12
     Int threads = 4
+    Int partition = 10000
   }
 
   parameter_meta {
@@ -143,7 +151,10 @@ task svprep {
       -ref_genome ~{refFasta} \
       -ref_genome_version ~{refFastaVersion} \
       -blacklist_bed ~{blocklist} \
-      -known_fusion_bed ~{knownfusion} 
+      -known_fusion_bed ~{knownfusion} \
+      -partition_size ~{partition} \
+      -t ~{threads} \
+      -apply_downsampling 
 
     ~{svprepScript}  \
       -sample ~{normalname} \
@@ -153,7 +164,10 @@ task svprep {
       -ref_genome_version ~{refFastaVersion} \
       -blacklist_bed  ~{blocklist} \
       -known_fusion_bed ~{knownfusion} \
-      -existing_junction_file 
+      -existing_junction_file ~{tumorname}.sv_prep.junctions.csv \
+      -partition_size ~{partition} \
+      -t ~{threads} \
+      -apply_downsampling 
 
   >>>
 
@@ -165,14 +179,14 @@ task svprep {
 
   meta {
     output_meta: {
-      preprocessedBam: "processed bam file",
-      preprocessedIdx: "index of the processed bam"
+      prepd_normal: "processed bam file",
+      prepd_tumor: "index of the processed bam"
     }
   }
 
   output {
-    File preprocessedBam = "~{workingDir}/~{basename(inputBam)}.sv.bam"
-    File preprocessedIdx = "~{workingDir}/~{basename(inputBam)}.sv.bam.csi"
+    File prepd_normal = "~{workingDir}/~{normalname}.sv_prep.bam"
+    File prepd_tumor = "~{workingDir}/~{tumorname}.sv_prep.bam"
   }
 }
 
@@ -182,9 +196,9 @@ task svprep {
 task preprocessInputs {
   input {
     File inputBam
-    File inputBai
     String? blocklist
-    String modules = "gridss/2.13.2 hmftools-data/hg38"
+    String samplename
+    String modules = "gridss/2.13.2 hmftools-data/53138 hg38/p12"
     String refFasta = "$HG38_ROOT/hg38_random.fa"
     String gridssScript = "$GRIDSS_ROOT/gridss --jar $GRIDSS_ROOT/gridss-2.13.2-gridss-jar-with-dependencies.jar"
     String workingDir = "~{basename(inputBam)}.gridss.working"
@@ -195,7 +209,6 @@ task preprocessInputs {
 
   parameter_meta {
     inputBam: "input .bam file"
-    inputBai: "input .bai file"
     blocklist: "bed file with regions to ignore"
     refFasta: "Reference FASTA file"
     gridssScript: "Script to run GRIDSS"
@@ -207,10 +220,11 @@ task preprocessInputs {
   }
 
   command <<<
-   ~{gridssScript} ~{"-b" + blocklist}\
+   ~{gridssScript} ~{"-b" + blocklist} \
    -r ~{refFasta} \
    -s preprocess \
    -t ~{threads} \
+   --labels ~{samplename} \
    ~{inputBam}
   >>>
 
@@ -236,6 +250,7 @@ task preprocessInputs {
 # ======================================
 # Assembly task, for speed we scatter it
 # ======================================
+
 task assembleBam {
   input {
     File tumorBam
@@ -247,6 +262,8 @@ task assembleBam {
     File processedTumrBam
     File processedTumrCsi
     String? blocklist
+    String normalName
+    String tumorName
     String modules = "gridss/2.13.2 hmftools-data/hg38"
     String refFasta = "$HG38_ROOT/hg38_random.fa"
     String gridssScript = "$GRIDSS_ROOT/gridss --jar $GRIDSS_ROOT/gridss-2.13.2-gridss-jar-with-dependencies.jar"
@@ -294,7 +311,9 @@ task assembleBam {
     -a assembly.bam \
     --jobnodes ~{jobNodes} \
     --jobindex ~{jobIndex} \
-    ~{normBam} ~{tumorBam}
+    --labels ~{normalName},~{tumorName} \
+    ~{normBam} ~{tumorBam} 
+
   >>>
 
   runtime {
@@ -328,6 +347,8 @@ task callSvs {
     File processedNormCsi
     File processedTumrBam
     File processedTumrCsi
+    String normalName
+    String tumorName
     String workingDirNorm = "~{basename(normBam)}.gridss.working"
     String workingDirTumr = "~{basename(tumorBam)}.gridss.working"
     Array[File] assembleChunks
@@ -385,6 +406,7 @@ task callSvs {
     -s assemble,call \
     -t ~{threads} \
     -o ~{outputFileNamePrefix}.allocated.vcf \
+    --labels ~{normalName},~{tumorName} \
     ~{normBam} ~{tumorBam}
   >>>
 
