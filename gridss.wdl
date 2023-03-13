@@ -5,14 +5,18 @@ workflow gridss {
     String tumorName
     String normalName
     File tumorBam
+    File tumorBai
     File normBam
+    File normBai
     Int assemblyChunks = 4
     String outputFileNamePrefix = basename("~{tumorBam}", ".filter.deduped.realigned.recalibrated.bam")
   }
 
   parameter_meta {
     tumorBam: "Input tumor file (bam)"
+    tumorBai: "Input tumor file index (bai)"
     normBam: "Input normal file (bam)"
+    normBai: "Input normal file index (bai)"
     assemblyChunks: "How many chunks to use for assembly job, may be calculated based on input size"
     outputFileNamePrefix: "Output file prefix"
   }
@@ -22,7 +26,9 @@ workflow gridss {
     tumorname = tumorName,
     normalname = normalName,
     tumorBam = tumorBam,
-    normBam = normBam
+    tumorBai = tumorBai,
+    normBam = normBam,
+    normBai = normBai
   }
   
   call preprocessInputs as preprocessNormal {
@@ -99,8 +105,10 @@ task svprep {
   input {
     String tumorname
     File tumorBam
+    File tumorBai
     String normalname
     File normBam
+    File normBai
     String blocklist = "$HMFTOOLS_DATA_ROOT/sv/gridss_blacklist.38.bed.gz"
     String modules = "hmftools/1.1 hmftools-data/53138 hg38/p12"
     String refFasta = "$HG38_ROOT/hg38_random.fa"
@@ -148,7 +156,7 @@ task svprep {
       -ref_genome_version ~{refFastaVersion} \
       -blacklist_bed  ~{blocklist} \
       -known_fusion_bed ~{knownfusion} \
-      -existing_junction_file ~{tumorname}.sv_prep.junctions.csv \
+      -existing_junction_file svprep/~{tumorname}.sv_prep.junctions.csv \
       -partition_size ~{partition} \
       -apply_downsampling 
 
