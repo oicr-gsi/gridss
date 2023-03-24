@@ -1,5 +1,15 @@
 version 1.0
 
+struct GenomeResources {
+    String svprepModules
+    String gridssModules
+    String refFasta
+    String refFastaDict
+    String ensembldata
+    String knownfusion
+    String blocklist
+}
+
 workflow gridss {
   input {
     String tumorName
@@ -10,6 +20,7 @@ workflow gridss {
     File normBai
     Int assemblyChunks = 4
     String outputFileNamePrefix = basename("~{tumorBam}", ".filter.deduped.realigned.recalibrated.bam")
+    String genomeVersion = "38"
   }
 
   parameter_meta {
@@ -21,6 +32,18 @@ workflow gridss {
     outputFileNamePrefix: "Output file prefix"
   }
 
+  Map[String,GenomeResources] resources = {
+    "38": {
+      "svprepModules": "hmftools/1.1 hmftools-data/53138 hg38-gridss-index/1.0 samtools/1.14",
+      "gridssModules": "gridss/2.13.2 hg38-gridss-index/1.0",
+      "refFasta": "$HG38_GRIDSS_INDEX_ROOT/hg38_random.fa",
+      "refFastaDict": "$HG38_GRIDSS_INDEX_ROOT/hg38_random.fa.dict",
+      "ensembldata": "$HMFTOOLS_DATA_ROOT/ensembl_data",
+      "knownfusion": "$HMFTOOLS_DATA_ROOT/sv/known_fusions.38.bedpe",
+      "blocklist": "$HMFTOOLS_DATA_ROOT/sv/gridss_blacklist.38.bed.gz"
+    }
+  }
+
   call svprep {
     input:
     tumorname = tumorName,
@@ -28,19 +51,33 @@ workflow gridss {
     tumorBam = tumorBam,
     tumorBai = tumorBai,
     normBam = normBam,
-    normBai = normBai
+    normBai = normBai,
+    refFastaVersion = genomeVersion,
+    modules = resources [ genomeVersion ].svprepModules,
+    ensembldata = resources [ genomeVersion ].ensembldata,
+    knownfusion = resources [ genomeVersion ].knownfusion,
+    blocklist = resources [ genomeVersion ].blocklist,
+    refFasta = resources [ genomeVersion ].refFasta
   }
   
   call preprocessInputs as preprocessNormal {
     input:
       samplename = normalName,
-      inputBam = svprep.prepd_normal
+      inputBam = svprep.prepd_normal,
+      modules = resources [ genomeVersion ].gridssModules,
+      blocklist = resources [ genomeVersion ].blocklist,
+      refFasta = resources [ genomeVersion ].refFasta,
+      refFastaDict = resources [ genomeVersion ].refFastaDict
   }
 
   call preprocessInputs as preprocessTumor {
     input:
       samplename = tumorName,
-      inputBam = svprep.prepd_tumor
+      inputBam = svprep.prepd_tumor,
+      modules = resources [ genomeVersion ].gridssModules,
+      blocklist = resources [ genomeVersion ].blocklist,
+      refFasta = resources [ genomeVersion ].refFasta,
+      refFastaDict = resources [ genomeVersion ].refFastaDict
   }
 
   scatter (i in range(assemblyChunks)) {
@@ -55,7 +92,10 @@ workflow gridss {
         processedTumrBam = preprocessTumor.preprocessedBam,
         processedTumrCsi = preprocessTumor.preprocessedIdx,
         jobNodes = assemblyChunks,
-        jobIndex = i        
+        jobIndex = i,
+        modules = resources [ genomeVersion ].gridssModules,
+        blocklist = resources [ genomeVersion ].blocklist,
+        refFasta = resources [ genomeVersion ].refFasta        
     }
   }
 
@@ -70,7 +110,10 @@ workflow gridss {
       processedTumrBam = preprocessTumor.preprocessedBam,
       processedTumrCsi = preprocessTumor.preprocessedIdx,
       assembleChunks = flatten(assembleBam.chunks),
-      outputFileNamePrefix = outputFileNamePrefix
+      outputFileNamePrefix = outputFileNamePrefix,
+      modules = resources [ genomeVersion ].gridssModules,
+      blocklist = resources [ genomeVersion ].blocklist,
+      refFasta = resources [ genomeVersion ].refFasta 
   }
 
   meta {
@@ -85,6 +128,9 @@ workflow gridss {
       {
         name: "hmftools",
         url: "https://github.com/hartwigmedical/hmftools"
+      },
+      {
+        name: "samtools"
       }
     ]
     output_meta: {
@@ -109,13 +155,13 @@ task svprep {
     String normalname
     File normBam
     File normBai
-    String blocklist = "$HMFTOOLS_DATA_ROOT/sv/gridss_blacklist.38.bed.gz"
-    String modules = "hmftools/1.1 hmftools-data/53138 hg38/p12"
-    String refFasta = "$HG38_ROOT/hg38_random.fa"
-    String refFastaVersion = "38"
+    String refFasta 
+    String refFastaVersion 
     String svprepScript = "java  -Xmx80G -jar $HMFTOOLS_ROOT/svprep.jar"
-    String ensembldata = "$HMFTOOLS_DATA_ROOT/ensembl_data"
-    String knownfusion = "$HMFTOOLS_DATA_ROOT/sv/known_fusions.38.bedpe"
+    String ensembldata 
+    String knownfusion 
+    String blocklist 
+    String modules 
     Int memory = 80
     Int timeout = 30
     Int threads = 4
@@ -160,6 +206,10 @@ task svprep {
       -partition_size ~{partition} \
       -apply_downsampling 
 
+      samtools sort svprep/~{normalname}.sv_prep.bam >svprep/~{normalname}.sv_prep.sort.bam
+      samtools sort svprep/~{tumorname}.sv_prep.bam >svprep/~{tumorname}.sv_prep.sort.bam
+
+
   >>>
 
   runtime {
@@ -176,8 +226,8 @@ task svprep {
   }
 
   output {
-    File prepd_normal = "svprep/~{normalname}.sv_prep.bam"
-    File prepd_tumor = "svprep/~{tumorname}.sv_prep.bam"
+    File prepd_normal = "svprep/~{normalname}.sv_prep.sort.bam"
+    File prepd_tumor = "svprep/~{tumorname}.sv_prep.sort.bam"
   }
 }
 
@@ -189,13 +239,15 @@ task preprocessInputs {
     File inputBam
     String? blocklist
     String samplename
-    String modules = "gridss/2.13.2 hmftools-data/53138 hg38/p12"
-    String refFasta = "$HG38_ROOT/hg38_random.fa"
+    String modules 
+    String refFasta 
+    File refFastaDict
     String gridssScript = "$GRIDSS_ROOT/gridss --jar $GRIDSS_ROOT/gridss-2.13.2-gridss-jar-with-dependencies.jar"
     String workingDir = "~{basename(inputBam)}.gridss.working"
     Int memory = 16
     Int timeout = 12
     Int threads = 4
+    
   }
 
   parameter_meta {
@@ -253,8 +305,8 @@ task assembleBam {
     String? blocklist
     String normalName
     String tumorName
-    String modules = "gridss/2.13.2 hmftools-data/hg38"
-    String refFasta = "$HG38_ROOT/hg38_random.fa"
+    String modules 
+    String refFasta
     String gridssScript = "$GRIDSS_ROOT/gridss --jar $GRIDSS_ROOT/gridss-2.13.2-gridss-jar-with-dependencies.jar"
     String workingDirNorm = "~{basename(normBam)}.gridss.working"
     String workingDirTumr = "~{basename(tumorBam)}.gridss.working"
@@ -338,8 +390,8 @@ task callSvs {
     String workingDirTumr = "~{basename(tumorBam)}.gridss.working"
     Array[File] assembleChunks
     String? blocklist
-    String modules = "gridss/2.13.2 hmftools/1.0 hmftools-data/hg38"
-    String refFasta = "$HG38_ROOT/hg38_random.fa"
+    String modules 
+    String refFasta 
     String gridssScript = "$GRIDSS_ROOT/gridss --jar $GRIDSS_ROOT/gridss-2.13.2-gridss-jar-with-dependencies.jar"
     String outputFileNamePrefix
     Int threads = 8
