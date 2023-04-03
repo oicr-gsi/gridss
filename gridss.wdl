@@ -4,7 +4,6 @@ struct GenomeResources {
     String svprepModules
     String gridssModules
     String refFasta
-    String refFastaDict
     String ensembldata
     String knownfusion
     String blocklist
@@ -35,9 +34,8 @@ workflow gridss {
   Map[String,GenomeResources] resources = {
     "38": {
       "svprepModules": "hmftools/1.1 hmftools-data/53138 hg38-gridss-index/1.0 samtools/1.14",
-      "gridssModules": "gridss/2.13.2 hg38-gridss-index/1.0",
+      "gridssModules": "gridss/2.13.2 hmftools-data/53138 hg38-gridss-index/1.0",
       "refFasta": "$HG38_GRIDSS_INDEX_ROOT/hg38_random.fa",
-      "refFastaDict": "$HG38_GRIDSS_INDEX_ROOT/hg38_random.fa.dict",
       "ensembldata": "$HMFTOOLS_DATA_ROOT/ensembl_data",
       "knownfusion": "$HMFTOOLS_DATA_ROOT/sv/known_fusions.38.bedpe",
       "blocklist": "$HMFTOOLS_DATA_ROOT/sv/gridss_blacklist.38.bed.gz"
@@ -66,8 +64,7 @@ workflow gridss {
       inputBam = svprep.prepd_normal,
       modules = resources [ genomeVersion ].gridssModules,
       blocklist = resources [ genomeVersion ].blocklist,
-      refFasta = resources [ genomeVersion ].refFasta,
-      refFastaDict = resources [ genomeVersion ].refFastaDict
+      refFasta = resources [ genomeVersion ].refFasta
   }
 
   call preprocessInputs as preprocessTumor {
@@ -76,15 +73,14 @@ workflow gridss {
       inputBam = svprep.prepd_tumor,
       modules = resources [ genomeVersion ].gridssModules,
       blocklist = resources [ genomeVersion ].blocklist,
-      refFasta = resources [ genomeVersion ].refFasta,
-      refFastaDict = resources [ genomeVersion ].refFastaDict
+      refFasta = resources [ genomeVersion ].refFasta
   }
 
   scatter (i in range(assemblyChunks)) {
     call assembleBam {
       input:
-        normBam = normBam,
-        tumorBam = tumorBam,
+        normBam = svprep.prepd_normal,
+        tumorBam = svprep.prepd_tumor,
         normalName = normalName,
         tumorName = tumorName,
         processedNormBam = preprocessNormal.preprocessedBam,
@@ -241,7 +237,6 @@ task preprocessInputs {
     String samplename
     String modules 
     String refFasta 
-    File refFastaDict
     String gridssScript = "$GRIDSS_ROOT/gridss --jar $GRIDSS_ROOT/gridss-2.13.2-gridss-jar-with-dependencies.jar"
     String workingDir = "~{basename(inputBam)}.gridss.working"
     Int memory = 16
@@ -285,8 +280,8 @@ task preprocessInputs {
   }
 
   output {
-    File preprocessedBam = "~{workingDir}/~{basename(inputBam)}.sv.bam"
-    File preprocessedIdx = "~{workingDir}/~{basename(inputBam)}.sv.bam.csi"
+    File preprocessedBam = "~{workingDir}/~{samplename}.sv_prep.sort.bam.sv.bam"
+    File preprocessedIdx = "~{workingDir}/~{samplename}.sv_prep.sort.bam.sv.bam.csi"
   }
 }
 
@@ -308,8 +303,8 @@ task assembleBam {
     String modules 
     String refFasta
     String gridssScript = "$GRIDSS_ROOT/gridss --jar $GRIDSS_ROOT/gridss-2.13.2-gridss-jar-with-dependencies.jar"
-    String workingDirNorm = "~{basename(normBam)}.gridss.working"
-    String workingDirTumr = "~{basename(tumorBam)}.gridss.working"
+    String workingDirNorm = "~{basename(processedNormBam)}.gridss.working"
+    String workingDirTumr = "~{basename(processedTumrBam)}.gridss.working"
     Int jobNodes = 1
     Int jobIndex = 0
     Int memory = 32
