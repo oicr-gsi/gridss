@@ -23,17 +23,20 @@ workflow gridss {
   }
 
   parameter_meta {
+    tumorName: "Name of tumor input, will be used in the output vcf header"
     tumorBam: "Input tumor file (bam)"
     tumorBai: "Input tumor file index (bai)"
+    normalName: "Name of the normal input, will be used in the output vcf header"
     normBam: "Input normal file (bam)"
     normBai: "Input normal file index (bai)"
     assemblyChunks: "How many chunks to use for assembly job, may be calculated based on input size"
     outputFileNamePrefix: "Output file prefix"
+    genomeVersion: "Genome identification, will be used in the output vcf header"
   }
 
   Map[String,GenomeResources] resources = {
     "38": {
-      "svprepModules": "hmftools/1.1 hmftools-data/53138 hg38-gridss-index/1.0 samtools/1.14",
+      "svprepModules": "hmftools/1.1 hmftools-data/53138 hg38-gridss-index/1.0",
       "gridssModules": "gridss/2.13.2 hmftools-data/53138 hg38-gridss-index/1.0",
       "refFasta": "$HG38_GRIDSS_INDEX_ROOT/hg38_random.fa",
       "ensembldata": "$HMFTOOLS_DATA_ROOT/ensembl_data",
@@ -42,26 +45,29 @@ workflow gridss {
     }
   }
 
-  call svprep {
+
+  call svprep as prepTumor {                                                                 
+    input: 
+    inputname = tumorName,
+    inputBam = tumorBam, 
+    inputBai = tumorBai,
+    modules = resources [ genomeVersion ].svprepModules
+  }                                                                                         
+
+
+  call svprep as prepNormal {
     input:
-    tumorname = tumorName,
-    normalname = normalName,
-    tumorBam = tumorBam,
-    tumorBai = tumorBai,
-    normBam = normBam,
-    normBai = normBai,
-    refFastaVersion = genomeVersion,
-    modules = resources [ genomeVersion ].svprepModules,
-    ensembldata = resources [ genomeVersion ].ensembldata,
-    knownfusion = resources [ genomeVersion ].knownfusion,
-    blocklist = resources [ genomeVersion ].blocklist,
-    refFasta = resources [ genomeVersion ].refFasta
+    inputname = normalName,
+    inputBam = normBam,
+    inputBai = normBai,
+    junctions = prepTumor.prepd_junctions,
+    modules = resources [ genomeVersion ].svprepModules                                    
   }
-  
+
   call preprocessInputs as preprocessNormal {
     input:
       samplename = normalName,
-      inputBam = svprep.prepd_normal,
+      inputBam = prepNormal.prepd_bam,
       modules = resources [ genomeVersion ].gridssModules,
       blocklist = resources [ genomeVersion ].blocklist,
       refFasta = resources [ genomeVersion ].refFasta
@@ -70,7 +76,7 @@ workflow gridss {
   call preprocessInputs as preprocessTumor {
     input:
       samplename = tumorName,
-      inputBam = svprep.prepd_tumor,
+      inputBam = prepTumor.prepd_bam,
       modules = resources [ genomeVersion ].gridssModules,
       blocklist = resources [ genomeVersion ].blocklist,
       refFasta = resources [ genomeVersion ].refFasta
@@ -79,8 +85,8 @@ workflow gridss {
   scatter (i in range(assemblyChunks)) {
     call assembleBam {
       input:
-        normBam = svprep.prepd_normal,
-        tumorBam = svprep.prepd_tumor,
+        normBam = prepNormal.prepd_bam,
+        tumorBam = prepTumor.prepd_bam,
         normalName = normalName,
         tumorName = tumorName,
         processedNormBam = preprocessNormal.preprocessedBam,
@@ -109,7 +115,7 @@ workflow gridss {
       outputFileNamePrefix = outputFileNamePrefix,
       modules = resources [ genomeVersion ].gridssModules,
       blocklist = resources [ genomeVersion ].blocklist,
-      refFasta = resources [ genomeVersion ].refFasta 
+      refFasta = resources [ genomeVersion ].refFasta
   }
 
   meta {
@@ -124,9 +130,6 @@ workflow gridss {
       {
         name: "hmftools",
         url: "https://github.com/hartwigmedical/hmftools"
-      },
-      {
-        name: "samtools"
       }
     ]
     output_meta: {
@@ -145,67 +148,61 @@ workflow gridss {
 
 task svprep {
   input {
-    String tumorname
-    File tumorBam
-    File tumorBai
-    String normalname
-    File normBam
-    File normBai
-    String refFasta 
-    String refFastaVersion 
+    String inputname
+    File inputBam
+    File inputBai
+    File? junctions
+    String blocklist = "$HMFTOOLS_DATA_ROOT/sv/gridss_blacklist.38.bed.gz"
+    String refFasta = "$HG38_ROOT/hg38_random.fa"
+    String refFastaVersion = "38"
     String svprepScript = "java  -Xmx80G -jar $HMFTOOLS_ROOT/svprep.jar"
-    String ensembldata 
-    String knownfusion 
-    String blocklist 
-    String modules 
-    Int memory = 80
+    String ensembldata = "$HMFTOOLS_DATA_ROOT/ensembl_data"
+    String knownfusion = "$HMFTOOLS_DATA_ROOT/sv/known_fusions.38.bedpe"
+    String workingDir = "~{basename(inputBam)}.gridss.working"
+    String modules
+    Int memory = 86
     Int timeout = 30
     Int threads = 4
     Int partition = 10000
   }
 
   parameter_meta {
-    tumorBam: "input tumor .bam file"
-    normBam: "input normal .bai file"
+    inputname: "input name to be used in the output"
+    inputBam: "input .bam file"
+    inputBai: "input .bai file"
+    junctions: "Optional exisiting junctions file"
     blocklist: "bed file with regions to ignore"
     refFasta: "Reference FASTA file"
+    refFastaVersion: "version of fasta file, initially it is 38 only"
+    svprepScript: "path to the pre-processing script"
+    ensembldata: "path to ENSEMBL data (hmftools resource)"
+    knownfusion: "path to known fusions (hmftools resource)"
     modules: "Required environment modules"
     memory: "Memory allocated for this job (GB)"
     threads: "Requested CPU threads"
     timeout: "Hours before task timeout"
+    partition: "Partition size"
+    workingDir: "Working directory"
   }
 
   command <<<
-
-    mkdir svprep
+    set -euo pipefail
+    mkdir ~{workingDir}
 
     ~{svprepScript}  \
-      -sample ~{tumorname} \
-      -bam_file ~{tumorBam} \
-      -output_dir svprep/ \
+      -sample ~{inputname} \
+      -bam_file ~{inputBam} \
+      -output_dir ~{workingDir}/ \
       -ref_genome ~{refFasta} \
       -ref_genome_version ~{refFastaVersion} \
       -blacklist_bed ~{blocklist} \
       -known_fusion_bed ~{knownfusion} \
+      {"-existing_junction_file " + junctions} \
       -partition_size ~{partition} \
-      -apply_downsampling 
+      -apply_downsampling
 
-    ~{svprepScript}  \
-      -sample ~{normalname} \
-      -bam_file ~{normBam} \
-      -output_dir svprep/ \
-      -ref_genome ~{refFasta} \
-      -ref_genome_version ~{refFastaVersion} \
-      -blacklist_bed  ~{blocklist} \
-      -known_fusion_bed ~{knownfusion} \
-      -existing_junction_file svprep/~{tumorname}.sv_prep.junctions.csv \
-      -partition_size ~{partition} \
-      -apply_downsampling 
-
-      samtools sort svprep/~{normalname}.sv_prep.bam >svprep/~{normalname}.sv_prep.sort.bam
-      samtools sort svprep/~{tumorname}.sv_prep.bam >svprep/~{tumorname}.sv_prep.sort.bam
-
-
+   samtools sort -T ~{workingDir} --reference ~{refFasta} ~{workingDir}/~{inputname}.sv_prep.bam -o ~{workingDir}/~{inputname}.sv_prep.sorted.bam
+   rm ~{workingDir}/~{inputname}.sv_prep.bam
   >>>
 
   runtime {
@@ -216,14 +213,14 @@ task svprep {
 
   meta {
     output_meta: {
-      prepd_normal: "processed bam file",
-      prepd_tumor: "index of the processed bam"
+      prepd_bam: "processed bam file",
+      prepd_junctions: "junctions .csv file"
     }
   }
 
   output {
-    File prepd_normal = "svprep/~{normalname}.sv_prep.sort.bam"
-    File prepd_tumor = "svprep/~{tumorname}.sv_prep.sort.bam"
+    File prepd_bam = "~{workingDir}/~{inputname}.sv_prep.sorted.bam"
+    File prepd_junctions  = "~{workingDir}/~{inputname}.sv_prep.junctions.csv"
   }
 }
 
@@ -235,14 +232,13 @@ task preprocessInputs {
     File inputBam
     String? blocklist
     String samplename
-    String modules 
+    String modules
     String refFasta 
     String gridssScript = "$GRIDSS_ROOT/gridss --jar $GRIDSS_ROOT/gridss-2.13.2-gridss-jar-with-dependencies.jar"
     String workingDir = "~{basename(inputBam)}.gridss.working"
     Int memory = 16
     Int timeout = 12
     Int threads = 4
-    
   }
 
   parameter_meta {
@@ -280,8 +276,8 @@ task preprocessInputs {
   }
 
   output {
-    File preprocessedBam = "~{workingDir}/~{samplename}.sv_prep.sort.bam.sv.bam"
-    File preprocessedIdx = "~{workingDir}/~{samplename}.sv_prep.sort.bam.sv.bam.csi"
+    File preprocessedBam = "~{workingDir}/~{basename(inputBam)}.sv.bam"
+    File preprocessedIdx = "~{workingDir}/~{basename(inputBam)}.sv.bam.csi"
   }
 }
 
@@ -301,10 +297,10 @@ task assembleBam {
     String normalName
     String tumorName
     String modules 
-    String refFasta
+    String refFasta 
     String gridssScript = "$GRIDSS_ROOT/gridss --jar $GRIDSS_ROOT/gridss-2.13.2-gridss-jar-with-dependencies.jar"
-    String workingDirNorm = "~{basename(processedNormBam)}.gridss.working"
-    String workingDirTumr = "~{basename(processedTumrBam)}.gridss.working"
+    String workingDirNorm = "~{basename(normBam)}.gridss.working"
+    String workingDirTumr = "~{basename(tumorBam)}.gridss.working"
     Int jobNodes = 1
     Int jobIndex = 0
     Int memory = 32
@@ -333,10 +329,10 @@ task assembleBam {
   command <<<
     set -euo pipefail
     mkdir ~{workingDirNorm} ~{workingDirTumr}
-    ln -s ~{processedNormBam} -t ~{workingDirNorm}
-    ln -s ~{processedNormCsi} -t ~{workingDirNorm}
-    ln -s ~{processedTumrBam} -t ~{workingDirTumr}
-    ln -s ~{processedTumrCsi} -t ~{workingDirTumr}
+    ln -s ~{processedNormBam} ~{workingDirNorm}/~{basename(normBam)}.sv.bam
+    ln -s ~{processedNormCsi} ~{workingDirNorm}/~{basename(normBam)}.sv.bam.csi
+    ln -s ~{processedTumrBam} ~{workingDirTumr}/~{basename(tumorBam)}.sv.bam
+    ln -s ~{processedTumrCsi} ~{workingDirTumr}/~{basename(tumorBam)}.sv.bam.csi
 
     ~{gridssScript} ~{"-b" + blocklist} \
     -r ~{refFasta} \
@@ -418,10 +414,11 @@ task callSvs {
   command <<<
     set -euo pipefail
     mkdir ~{workingDirNorm} ~{workingDirTumr}
-    ln -s ~{processedNormBam} -t ~{workingDirNorm}
-    ln -s ~{processedNormCsi} -t ~{workingDirNorm}
-    ln -s ~{processedTumrBam} -t ~{workingDirTumr}
-    ln -s ~{processedTumrCsi} -t ~{workingDirTumr}
+    ln -s ~{processedNormBam} ~{workingDirNorm}/~{basename(normBam)}.sv.bam
+    ln -s ~{processedNormCsi} ~{workingDirNorm}/~{basename(normBam)}.sv.bam.csi
+    ln -s ~{processedTumrBam} ~{workingDirTumr}/~{basename(tumorBam)}.sv.bam
+    ln -s ~{processedTumrCsi} ~{workingDirTumr}/~{basename(tumorBam)}.sv.bam.csi
+
     mkdir assembly.bam.gridss.working
     for f in ~{sep=' ' assembleChunks}
     do

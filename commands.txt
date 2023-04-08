@@ -6,16 +6,33 @@ This section lists commands run by gridss workflow
 perform joint SV calling on the tumour and normal. The workflow consists of three steps
 described below:
 
-## Preprocess
 
-This is a step of preprocessing inputs
-
-## Call SVs
-
-Using pre-processed data call Structural Variants
+## SV_PREP script runs on inputs before preprocessing and assembly steps
 
 ```
-   GRIDSS_SCRIPT 
+    set -euo pipefail
+    mkdir WORKING_DIR
+
+    SVPREP_SCRIPT  \
+      -sample INPUT_NAME \
+      -bam_file INPUT_BAM \
+      -output_dir WORKING_DIR \
+      -ref_genome REF_FASTA \
+      -ref_genome_version FASTA_VERSION \
+      -blacklist_bed BLOCKLIST \
+      -known_fusion_bed KNOWN_FUSIONS \
+      -existing_junction_file JUNCTIONS \ [Optional]
+      -partition_size PARTITIONS \
+      -apply_downsampling
+
+   samtools sort -T WORKING_DIR --reference REF_FASTA WORKING_DIR/INPUT_NAME.sv_prep.bam -o WORKING_DIR/INPUT_NAME.sv_prep.sorted.bam
+   rm WORKING_DIR/INPUT_NAME.sv_prep.bam
+  
+```
+## Preprocessing 
+
+```
+   GRIDSS_SCRIPT
    -b BLACKLIST \
    -r REF_FASTA \
    -s preprocess \
@@ -31,10 +48,10 @@ and can be distributed across multiple nodes (using scatter)
 ```
     set -euo pipefail
     mkdir WORKDIR_NORM WORKDIR_TUMOR
-    ln -s PROCESSED_NORMBAM -t WORKDIR_NORM
-    ln -s PROCESSED_NORMIDX -t WORKDIR_NORM
-    ln -s PROCESSED_TUMRBAM -t WORKDIR_TUMOR
-    ln -s PROCESSED_TUMRIDX -t WORKDIR_TUMOR
+    ln -s PROCESSED_NORMBAM WORKDIR_NORM/basename(NORMBAM).sv.bam
+    ln -s PROCESSED_NORMIDX WORKDIR_NORM/basename(NORMBAM).sv.bam.csi
+    ln -s PROCESSED_TUMRBAM WORKDIR_TUMOR/basename(TUMRBAM).sv.bam
+    ln -s PROCESSED_TUMRIDX WORKDIR_TUMOR/basename(TUMRBAM).sv.bam.csi
 
     GRIDSS_SCRIPT
     -b BLACKLIST \
@@ -54,11 +71,12 @@ Using pre-processed data call Structural Variants
 ```
     set -euo pipefail
     mkdir WORKDIR_NORM WORKDIR_TUMOR
-    ln -s PROCESSED_NORMBAM -t WORKDIR_NORM
-    ln -s PROCESSED_NORMIDX -t WORKDIR_NORM
-    ln -s PROCESSED_TUMRBAM -t WORKDIR_TUMOR
-    ln -s PROCESSED_TUMRIDX -t WORKDIR_TUMOR
+    ln -s PROCESSED_NORMBAM WORKDIR_NORM/basename(NORMBAM).sv.bam
+    ln -s PROCESSED_NORMIDX WORKDIR_NORM/basename(NORMBAM).sv.bam.csi
+    ln -s PROCESSED_TUMRBAM WORKDIR_TUMOR/basename(TUMRBAM).sv.bam
+    ln -s PROCESSED_TUMRIDX WORKDIR_TUMOR/basename(TUMRBAM).sv.bam.csi
     mkdir assembly.bam.gridss.working
+    
     for f in ~{sep=' ' assembleChunks}
     do
       ln -s $f -t assembly.bam.gridss.working
