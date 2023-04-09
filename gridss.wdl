@@ -152,17 +152,18 @@ task svprep {
     File inputBam
     File inputBai
     File? junctions
+    Int memory = 86
+    Int timeout = 30
+    Int threads = 4
+    Int overhead = 6
     String blocklist = "$HMFTOOLS_DATA_ROOT/sv/gridss_blacklist.38.bed.gz"
     String refFasta = "$HG38_ROOT/hg38_random.fa"
     String refFastaVersion = "38"
-    String svprepScript = "java  -Xmx80G -jar $HMFTOOLS_ROOT/svprep.jar"
+    String svprepScript = "java  -Xmx~{memory - overhead}G -jar $HMFTOOLS_ROOT/svprep.jar"
     String ensembldata = "$HMFTOOLS_DATA_ROOT/ensembl_data"
     String knownfusion = "$HMFTOOLS_DATA_ROOT/sv/known_fusions.38.bedpe"
     String workingDir = "~{basename(inputBam)}.gridss.working"
     String modules
-    Int memory = 86
-    Int timeout = 30
-    Int threads = 4
     Int partition = 10000
   }
 
@@ -180,6 +181,7 @@ task svprep {
     modules: "Required environment modules"
     memory: "Memory allocated for this job (GB)"
     threads: "Requested CPU threads"
+    overhead: "Overhead for java (GB)"
     timeout: "Hours before task timeout"
     partition: "Partition size"
     workingDir: "Working directory"
