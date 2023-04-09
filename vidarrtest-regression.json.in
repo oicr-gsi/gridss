@@ -49,6 +49,8 @@
           },
           "type": "EXTERNAL"
       },
+      "gridss.normalName": "COLO829_0001_Ly_R_WG",
+      "gridss.tumorName": "COLO829_0001_Lu_P_WG",
       "gridss.assembleBam.blacklist": null,
       "gridss.assembleBam.gridssScript": "$GRIDSS_ROOT/gridss --jar $GRIDSS_ROOT/gridss-2.13.2-gridss-jar-with-dependencies.jar",
       "gridss.assembleBam.memory": null,
