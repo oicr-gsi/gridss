@@ -49,6 +49,7 @@
           },
           "type": "EXTERNAL"
       },
+      "gridss.genomeVersion": "38",
       "gridss.normalName": "COLO829_0001_Ly_R_WG",
       "gridss.tumorName": "COLO829_0001_Lu_P_WG",
       "gridss.assembleBam.blacklist": null,
