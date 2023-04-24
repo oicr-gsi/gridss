@@ -4,6 +4,9 @@ performs somatic genomic rearrangement detection and classification
 
 ## Overview
 
+GRIDSS is a module software suite containing tools useful for the detection of genomic rearrangements. It includes a genome-wide break-end assembler, as well as a structural variation caller for Illumina sequencing data. Variants are called based on alignment-guided positional de Bruijn graph genome-wide break-end assembly, split read, and read pair evidence.
+GRIDSS makes extensive use of the standard tags defined by SAM specifications. Due to the modular design, any step (such as split read identification) can be replaced by another implementation that also outputs using the standard tags. It is hoped that this tool can serve as an exemplar modular structural variant pipeline designed for interoperability with other tools.
+
 ## Dependencies
 
 * [GRIDSS](https://github.com/PapenfussLab/gridss)
