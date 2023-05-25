@@ -61,8 +61,8 @@ workflow gridss {
     refFasta = resources [ genomeVersion ].refFasta,
     refFai = resources [ genomeVersion ].refFai,
     modules = resources [ genomeVersion ].gatkModules,
-    inputBam = tumorBam,
-    inputBai = tumorBai
+    inputBam = normalBam,
+    inputBai = normalBai
   }
 
 
