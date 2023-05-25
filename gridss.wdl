@@ -3,7 +3,9 @@ version 1.0
 struct GenomeResources {
     String svprepModules
     String gridssModules
+    String gatkModules
     String refFasta
+    String refFai
     String ensembldata
     String knownfusion
     String blocklist
@@ -11,8 +13,6 @@ struct GenomeResources {
 
 workflow gridss {
   input {
-    String tumorName
-    String normalName
     File tumorBam
     File tumorBai
     File normBam
@@ -38,17 +38,37 @@ workflow gridss {
     "38": {
       "svprepModules": "hmftools/1.1 hmftools-data/53138 hg38-gridss-index/1.0",
       "gridssModules": "gridss/2.13.2 hmftools-data/53138 hg38-gridss-index/1.0",
+      "gatkModules": "hg38-gridss-index/1.0 gatk/4.1.6.0",
       "refFasta": "$HG38_GRIDSS_INDEX_ROOT/hg38_random.fa",
+      "refFai": "$HG38_GRIDSS_INDEX_ROOT/hg38_random.fa.fai",
       "ensembldata": "$HMFTOOLS_DATA_ROOT/ensembl_data",
       "knownfusion": "$HMFTOOLS_DATA_ROOT/sv/known_fusions.38.bedpe",
       "blocklist": "$HMFTOOLS_DATA_ROOT/sv/gridss_blacklist.38.bed.gz"
     }
   }
 
+  call extractName as extractTumorName {
+    input:
+    refFasta = resources [ genomeVersion ].refFasta,
+    refFai = resources [ genomeVersion ].refFai,
+    modules = resources [ genomeVersion ].gatkModules,
+    inputBam = tumorBam,
+    inputBai = tumorBai
+  }
+
+  call extractName as extractNormalName {
+    input:
+    refFasta = resources [ genomeVersion ].refFasta,
+    refFai = resources [ genomeVersion ].refFai,
+    modules = resources [ genomeVersion ].gatkModules,
+    inputBam = normBam,
+    inputBai = normBai
+  }
+
 
   call svprep as prepTumor {                                                                 
     input: 
-    inputname = tumorName,
+    inputname = extractTumorName.input_name,
     inputBam = tumorBam, 
     inputBai = tumorBai,
     modules = resources [ genomeVersion ].svprepModules
@@ -57,7 +77,7 @@ workflow gridss {
 
   call svprep as prepNormal {
     input:
-    inputname = normalName,
+    inputname = extractNormalName.input_name,
     inputBam = normBam,
     inputBai = normBai,
     junctions = prepTumor.prepd_junctions,
@@ -66,7 +86,7 @@ workflow gridss {
 
   call preprocessInputs as preprocessNormal {
     input:
-      samplename = normalName,
+      samplename = extractNormalName.input_name,
       inputBam = prepNormal.prepd_bam,
       modules = resources [ genomeVersion ].gridssModules,
       blocklist = resources [ genomeVersion ].blocklist,
@@ -75,7 +95,7 @@ workflow gridss {
 
   call preprocessInputs as preprocessTumor {
     input:
-      samplename = tumorName,
+      samplename = extractTumorName.input_name,
       inputBam = prepTumor.prepd_bam,
       modules = resources [ genomeVersion ].gridssModules,
       blocklist = resources [ genomeVersion ].blocklist,
@@ -87,8 +107,8 @@ workflow gridss {
       input:
         normBam = prepNormal.prepd_bam,
         tumorBam = prepTumor.prepd_bam,
-        normalName = normalName,
-        tumorName = tumorName,
+        normalName = extractNormalName.input_name,
+        tumorName = extractTumorName.input_name,
         processedNormBam = preprocessNormal.preprocessedBam,
         processedNormCsi = preprocessNormal.preprocessedIdx,
         processedTumrBam = preprocessTumor.preprocessedBam,
@@ -103,8 +123,8 @@ workflow gridss {
 
   call callSvs {
     input:
-      normalName = normalName,
-      tumorName = tumorName,
+      normalName = extractNormalName.input_name,
+      tumorName = extractTumorName.input_name,
       tumorBam = tumorBam,
       normBam = normBam,
       processedNormBam = preprocessNormal.preprocessedBam,
@@ -142,9 +162,60 @@ workflow gridss {
   }
 }
 
-# =================================
+# =========================================
+# Job to extract names from input bam files
+# =========================================
+task extractName {
+  input {
+    String modules
+    String refFasta 
+    String refFai 
+    File inputBam
+    File inputBai
+    Int memory = 4
+    Int timeout = 4
+  }
+
+  parameter_meta {
+    inputBam: "input .bam file"
+    inputBai: "input .bai file"
+    refFasta: "Reference FASTA file"
+    refFai: "Reference fai index"
+    modules: "Required environment modules"
+    memory: "Memory allocated for this job (GB)"
+    timeout: "Hours before task timeout"
+  }
+
+  command <<<
+    set -euo pipefail
+
+    if [ -f "~{inputBam}" ]; then
+      gatk --java-options "-Xmx1g" GetSampleName -R ~{refFasta} -I ~{inputBam} -O input_name.txt -encode
+    fi
+
+    cat input_name.txt
+  >>>
+
+  runtime {
+    memory:  "~{memory} GB"
+    modules: "~{modules}"
+    timeout: "~{timeout}"
+  }
+
+  meta {
+    output_meta: {
+      input_name: "name of the input"
+    }
+  }
+
+  output {
+    String input_name = read_string(stdout()) 
+  }
+}
+
+# ====================================
 # Job to filter bams before preprocess
-# =================================
+# ====================================
 
 task svprep {
   input {
