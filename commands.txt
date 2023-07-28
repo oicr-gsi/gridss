@@ -6,29 +6,72 @@ This section lists commands run by gridss workflow
 perform joint SV calling on the tumour and normal. The workflow consists of three steps
 described below:
 
+## Get all chromosomes
+
+Return list of all chromosomes in assembly excluding ALT and RANDOM contigs, as well as mitochondrial chromosome
+
+```
+    cut -f 1 REFERENCE_FAI | uniq | grep -v _ | grep -v M | grep ^chr
+```
+
+## Get RAM-scaling coefficient based on chromosome size
+
+This task is used to scale RAM allocation for chunked svprep task based on chromosome size
+
+```
+    grep -w ^CHROM REFERENCE_FAI | cut -f 2 | awk '{print int(($1/LARGEST_CHR_SIZE} + 0.1) * 10)/10}'
+```
+
+## Extract input name using GATK
+
+Analogous to mutect2 workflow, for keeping names used in BAM alignments.
+
+```
+    set -euo pipefail
+
+    if [ -f INPUT_BAM ]; then
+      gatk --java-options "-Xmx1g" GetSampleName -R REF_FASTA -I INPUT_BAM -O input_name.txt -encode
+    fi
+
+    cat input_name.txt
+```
 
 ## SV_PREP script runs on inputs before preprocessing and assembly steps
+
+This is a preprocessing task which is split by chromosome. --partition_size and -junction_frags_cap affect the performance
+which may be greatly enchanced by setting -junction_frags_cap to low hundreds. -partition_size is 1M by default, lowering it
+increases memory requirements.
 
 ```
     set -euo pipefail
     mkdir WORKING_DIR
 
-    SVPREP_SCRIPT  \
+      SVPREP_SCRIPT  \
       -sample INPUT_NAME \
       -bam_file INPUT_BAM \
       -output_dir WORKING_DIR \
       -ref_genome REF_FASTA \
-      -ref_genome_version FASTA_VERSION \
+      -ref_genome_version REF_FASTA_VERSION \
       -blacklist_bed BLOCKLIST \
       -known_fusion_bed KNOWN_FUSIONS \
-      -existing_junction_file JUNCTIONS \ [Optional]
-      -partition_size PARTITIONS \
+      -threads THREADS \
+      -specific_chr CHROM ~{"-existing_junction_file " + JUNCTIONS} \
+      -partition_size PARTITIONS ~{"-junction_frags_cap " + SUPPORT_FRAG_CAP} \
       -apply_downsampling
 
-   samtools sort -T WORKING_DIR --reference REF_FASTA WORKING_DIR/INPUT_NAME.sv_prep.bam -o WORKING_DIR/INPUT_NAME.sv_prep.sorted.bam
+   samtools sort -T WORKING_DIR --reference REF_FASTA WORKING_DIR/INPUT_NAME.sv_prep.bam -o WORKING_DIR/INPUT_NAME.CHROM.sv_prep.sorted.bam
+   cp WORKING_DIR/INPUT_NAME.sv_prep.junctions.csv WORKING_DIR/INPUT_NAME.CHROM.sv_prep.junctions.csv
    rm WORKING_DIR/INPUT_NAME.sv_prep.bam
-  
 ```
+
+### Aggregate chunked results from svprep task
+
+```
+    set -euo pipefail
+    samtools merge -o INPUT_NAME.sv_prep.sorted.bam ~{sep=" " prepBamfiles}
+    cat ~{sep=" " prepJunctions} | sort -V -u > INPUT_NAME.sv_prep.junctions.csv
+```
+
 ## Preprocessing 
 
 ```
@@ -47,14 +90,13 @@ and can be distributed across multiple nodes (using scatter)
 
 ```
     set -euo pipefail
-    mkdir WORKDIR_NORM WORKDIR_TUMOR
-    ln -s PROCESSED_NORMBAM WORKDIR_NORM/basename(NORMBAM).sv.bam
-    ln -s PROCESSED_NORMIDX WORKDIR_NORM/basename(NORMBAM).sv.bam.csi
-    ln -s PROCESSED_TUMRBAM WORKDIR_TUMOR/basename(TUMRBAM).sv.bam
-    ln -s PROCESSED_TUMRIDX WORKDIR_TUMOR/basename(TUMRBAM).sv.bam.csi
+    mkdir WORKING_DIR_NORM WORKING_DIR_TUMOR
+    ln -s PROCESSED_NORM_BAM WORKING_DIR_NORM/BASENAME_NORM_BAM.sv.bam
+    ln -s PROCESSED_NORM_CSI WORKING_DIR_NORM/BASENAME_NORM_BAM.sv.bam.csi
+    ln -s PROCESSED_TUMR_BAM WORKING_DIR_TUMR/BASENAME_TUMR_BAM.sv.bam
+    ln -s PROCESSED_TUMR_CSI WORKING_DIR_TUMR/BASENAME_TUMR_BAM.sv.bam.csi
 
-    GRIDSS_SCRIPT
-    -b BLACKLIST \
+    GRIDSS_SCRIPT -b BLACKLIST \
     -r REF_FASTA \
     -t THREADS \
     -s assemble \
