@@ -3,7 +3,7 @@
     "arguments": {
        "gridss.tumorBai": {
           "contents": {
-             "configuration": "/.mounts/labs/gsi/testdata/gridss/1.0/input_data/COLO829_0001_Lu_P_WG.fdrr.chr21.bam.bai",
+             "configuration": "/.mounts/labs/gsi/testdata/gridss/1.3/input_data/COLO829_0001_Lu_P_WG.fdrr.chr21.bam.bai",
                 "externalIds": [
                   {
                     "id": "TEST",
@@ -15,7 +15,7 @@
        },
        "gridss.tumorBam": {
           "contents": {
-             "configuration": "/.mounts/labs/gsi/testdata/gridss/1.0/input_data/COLO829_0001_Lu_P_WG.fdrr.chr21.bam",
+             "configuration": "/.mounts/labs/gsi/testdata/gridss/1.3/input_data/COLO829_0001_Lu_P_WG.fdrr.chr21.bam",
                 "externalIds": [
                   {
                     "id": "TEST",
@@ -27,7 +27,7 @@
        },
        "gridss.normBai": {
           "contents": {
-             "configuration": "/.mounts/labs/gsi/testdata/gridss/1.0/input_data/COLO829_0001_Ly_R_WG.fdrr.chr21.bam.bai",
+             "configuration": "/.mounts/labs/gsi/testdata/gridss/1.3/input_data/COLO829_0001_Ly_R_WG.fdrr.chr21.bam.bai",
                 "externalIds": [
                   {
                     "id": "TEST",
@@ -39,7 +39,7 @@
        },
        "gridss.normBam": {
           "contents": {
-             "configuration": "/.mounts/labs/gsi/testdata/gridss/1.0/input_data/COLO829_0001_Ly_R_WG.fdrr.chr21.bam",
+             "configuration": "/.mounts/labs/gsi/testdata/gridss/1.3/input_data/COLO829_0001_Ly_R_WG.fdrr.chr21.bam",
                 "externalIds": [
                   {
                     "id": "TEST",
@@ -75,6 +75,12 @@
       "gridss.extractTumorName.memory": null,
       "gridss.extractTumorName.timeout": null,
       "gridss.outputFileNamePrefix": "TEST",
+      "gridss.mergeNormalData.jobMemory": null,
+      "gridss.mergeNormalData.modules": null,
+      "gridss.mergeNormalData.timeout": null,
+      "gridss.mergeTumorData.jobMemory": null,
+      "gridss.mergeTumorData.modules": null,
+      "gridss.mergeTumorData.timeout": null,
       "gridss.prepNormal.timeout": null,
       "gridss.prepNormal.threads": null,
       "gridss.prepNormal.memory": null,
@@ -85,6 +91,7 @@
       "gridss.prepNormal.knownfusion": null,
       "gridss.prepNormal.refFasta": null,
       "gridss.prepNormal.refFastaVersion": null,
+      "gridss.prepNormal.supportFragCap": null,
       "gridss.prepNormal.workingDir": null,
       "gridss.prepNormal.overhead": null,
       "gridss.prepNormal.svprepScript": null,
@@ -97,7 +104,8 @@
       "gridss.prepTumor.junctions": null,
       "gridss.prepTumor.knownfusion": null,
       "gridss.prepTumor.refFasta": null,
-      "gridss.prepTumor.refFastaVersion": null, 
+      "gridss.prepTumor.refFastaVersion": null,
+      "gridss.prepTumor.supportFragCap": null,
       "gridss.prepTumor.workingDir": null,
       "gridss.prepTumor.overhead": null,
       "gridss.prepTumor.svprepScript": null,
@@ -116,7 +124,13 @@
       "gridss.preprocessTumor.refFasta": "$HMFTOOLS_DATA_ROOT/hg38_random.fa",
       "gridss.preprocessTumor.threads": null,
       "gridss.preprocessTumor.timeout": null,
-      "gridss.preprocessTumor.workingDir": null
+      "gridss.preprocessTumor.workingDir": null,
+      "gridss.splitFaiToArray.memory": null,
+      "gridss.splitFaiToArray.timeout": null,
+      "gridss.splitForNormal.memory": null,
+      "gridss.splitForNormal.timeout": null,
+      "gridss.splitForTumor.memory": null,
+      "gridss.splitForTumor.timeout": null
     },
       "description": "gridss workflow test",
       "engineArguments": {
@@ -138,7 +152,7 @@
          {
           "metrics_calculate": "@CHECKOUT@/tests/calculate.sh",
           "metrics_compare": "@CHECKOUT@/tests/compare.sh",
-          "output_metrics": "/.mounts/labs/gsi/testdata/gridss/1.0/output_metrics/gridss_test.metrics",
+          "output_metrics": "/.mounts/labs/gsi/testdata/gridss/1.3/output_metrics/gridss_test.metrics",
           "type": "script"
          }
       ]
