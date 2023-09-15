@@ -19,7 +19,7 @@ workflow gridss {
     File normBam
     File normBai
     Int assemblyChunks = 4
-    String outputFileNamePrefix = basename("~{tumorBam}", ".filter.deduped.realigned.recalibrated.bam")
+    String outputFileNamePrefix 
     String genomeVersion = "38"
   }
 
@@ -38,7 +38,7 @@ workflow gridss {
   Map[String,GenomeResources] resources = {
     "38": {
       "svprepModules": "hmftools/1.1 hmftools-data/53138 hg38-gridss-index/1.0",
-      "gridssModules": "gridss/2.13.2 hmftools-data/53138 hg38-gridss-index/1.0",
+      "gridssModules": "gridss/2.13.2m hmftools-data/53138 hg38-gridss-index/1.0",
       "gatkModules": "hg38-gridss-index/1.0 gatk/4.1.6.0",
       "refFasta": "$HG38_GRIDSS_INDEX_ROOT/hg38_random.fa",
       "refFai": "$HG38_GRIDSS_INDEX_ROOT/hg38_random.fa.fai",
@@ -68,16 +68,18 @@ workflow gridss {
   }
 
   call splitFaiToArray {
-    input: modules = resources [ genomeVersion ].gatkModules,
-           refFai = resources [ genomeVersion ].refFai
+    input:
+    modules = resources [ genomeVersion ].gatkModules,
+    refFai = resources [ genomeVersion ].refFai
   }
 
   scatter(c in splitFaiToArray.out) {
     call getChrCoefficient as splitForTumor {
-      input: modules = resources [ genomeVersion ].gatkModules,
-             refFai = resources [ genomeVersion ].refFai,
-             largestChrom = resources [ genomeVersion ].largest,
-             chromosome = c
+      input: 
+      modules = resources [ genomeVersion ].gatkModules,
+      refFai = resources [ genomeVersion ].refFai,
+      largestChrom = resources [ genomeVersion ].largest,
+      chromosome = c
     }
     call svprep as prepTumor {                                                                 
       input:
@@ -100,10 +102,11 @@ workflow gridss {
  
   scatter(c in splitFaiToArray.out) {
     call getChrCoefficient as splitForNormal {
-      input: modules = resources [ genomeVersion ].gatkModules,
-             refFai = resources [ genomeVersion ].refFai,
-             largestChrom = resources [ genomeVersion ].largest,
-             chromosome = c
+      input:
+      modules = resources [ genomeVersion ].gatkModules,
+      refFai = resources [ genomeVersion ].refFai,
+      largestChrom = resources [ genomeVersion ].largest,
+      chromosome = c
     }
     call svprep as prepNormal {
       input:
@@ -359,6 +362,7 @@ task svprep {
     String chrom
     String modules
     Float scaleCoefficient
+    String? additionalParameters
     Int? supportFragCap
     Int partition = 10000
   }
@@ -381,6 +385,7 @@ task svprep {
     overhead: "Overhead for java (GB)"
     timeout: "Hours before task timeout"
     scaleCoefficient: "Scaling RAM by the size of chromosome"
+    additionalParameters: "Any additional parameters to svprep we want to pass"
     partition: "Partition size"
     supportFragCap: "Support frag cap, limit supporting reads per junction"
     workingDir: "Working directory"
@@ -398,7 +403,7 @@ task svprep {
       -ref_genome_version ~{refFastaVersion} \
       -blacklist_bed ~{blocklist} \
       -known_fusion_bed ~{knownfusion} \
-      -threads ~{threads} \
+      -threads ~{threads} ~{additionalParameters}\
       -specific_chr ~{chrom} ~{"-existing_junction_file " + junctions} \
       -partition_size ~{partition} ~{"-junction_frags_cap " + supportFragCap} \
       -apply_downsampling
@@ -484,11 +489,12 @@ task preprocessInputs {
     String samplename
     String modules
     String refFasta 
-    String gridssScript = "$GRIDSS_ROOT/gridss --jar $GRIDSS_ROOT/gridss-2.13.2-gridss-jar-with-dependencies.jar"
+    String gridssScript = "gridss --jar $GRIDSS_ROOT/bin/gridss-2.13.2-gridss-jar-with-dependencies.jar"
     String workingDir = "~{basename(inputBam)}.gridss.working"
     Int memory = 16
     Int timeout = 12
     Int threads = 4
+    String? additionalParameters
   }
 
   parameter_meta {
@@ -501,13 +507,14 @@ task preprocessInputs {
     memory: "Memory allocated for this job (GB)"
     threads: "Requested CPU threads"
     timeout: "Hours before task timeout"
+    additionalParameters: "Any additional parameters to svprep we want to pass"
   }
 
   command <<<
    ~{gridssScript} ~{"-b" + blocklist} \
    -r ~{refFasta} \
    -s preprocess \
-   -t ~{threads} \
+   -t ~{threads} ~{additionalParameters}\
    --labels ~{samplename} \
    ~{inputBam}
   >>>
@@ -548,7 +555,7 @@ task assembleBam {
     String tumorName
     String modules 
     String refFasta 
-    String gridssScript = "$GRIDSS_ROOT/gridss --jar $GRIDSS_ROOT/gridss-2.13.2-gridss-jar-with-dependencies.jar"
+    String gridssScript = "gridss --jar $GRIDSS_ROOT/bin/gridss-2.13.2-gridss-jar-with-dependencies.jar"
     String workingDirNorm = "~{basename(normBam)}.gridss.working"
     String workingDirTumr = "~{basename(tumorBam)}.gridss.working"
     Int jobNodes = 1
@@ -556,6 +563,7 @@ task assembleBam {
     Int memory = 32
     Int timeout = 24
     Int threads = 8
+    String? additionalParameters
   }
  
   parameter_meta {
@@ -574,6 +582,7 @@ task assembleBam {
     memory: "Memory allocated for this job (GB)"
     threads: "Requested CPU threads"
     timeout: "Hours before task timeout"
+    additionalParameters: "Any additional parameters to svprep we want to pass"
   }
 
   command <<<
@@ -586,7 +595,7 @@ task assembleBam {
 
     ~{gridssScript} ~{"-b" + blocklist} \
     -r ~{refFasta} \
-    -t ~{threads} \
+    -t ~{threads} ~{additionalParameters}\
     -s assemble \
     -a assembly.bam \
     --jobnodes ~{jobNodes} \
@@ -633,12 +642,13 @@ task callSvs {
     String? blocklist
     String modules 
     String refFasta 
-    String gridssScript = "$GRIDSS_ROOT/gridss --jar $GRIDSS_ROOT/gridss-2.13.2-gridss-jar-with-dependencies.jar"
+    String gridssScript = "gridss --jar $GRIDSS_ROOT/bin/gridss-2.13.2-gridss-jar-with-dependencies.jar"
     String outputFileNamePrefix
     Int threads = 8
     Int memory = 50
     Int overhead = 8
     Int timeout = 24
+    String? additionalParameters
   }
 
   parameter_meta {
@@ -659,6 +669,7 @@ task callSvs {
     overhead: "Memory for other things ran by JVM"
     threads: "Requested CPU threads"
     timeout: "Hours before task timeout"
+    additionalParameters: "Any additional parameters to svprep we want to pass"
   }
 
   command <<<
@@ -681,7 +692,7 @@ task callSvs {
     --reference ~{refFasta} \
     -a assembly.bam \
     -s assemble,call \
-    -t ~{threads} \
+    -t ~{threads} ~{additionalParameters} \
     -o ~{outputFileNamePrefix}.allocated.vcf \
     --labels ~{normalName},~{tumorName} \
     ~{normBam} ~{tumorBam}
