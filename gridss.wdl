@@ -403,7 +403,7 @@ task svprep {
       -ref_genome_version ~{refFastaVersion} \
       -blacklist_bed ~{blocklist} \
       -known_fusion_bed ~{knownfusion} \
-      -threads ~{threads} ~{additionalParameters}\
+      -threads ~{threads} ~{additionalParameters} \
       -specific_chr ~{chrom} ~{"-existing_junction_file " + junctions} \
       -partition_size ~{partition} ~{"-junction_frags_cap " + supportFragCap} \
       -apply_downsampling
@@ -514,7 +514,7 @@ task preprocessInputs {
    ~{gridssScript} ~{"-b" + blocklist} \
    -r ~{refFasta} \
    -s preprocess \
-   -t ~{threads} ~{additionalParameters}\
+   -t ~{threads} ~{additionalParameters} \
    --labels ~{samplename} \
    ~{inputBam}
   >>>
@@ -595,7 +595,7 @@ task assembleBam {
 
     ~{gridssScript} ~{"-b" + blocklist} \
     -r ~{refFasta} \
-    -t ~{threads} ~{additionalParameters}\
+    -t ~{threads} ~{additionalParameters} \
     -s assemble \
     -a assembly.bam \
     --jobnodes ~{jobNodes} \
