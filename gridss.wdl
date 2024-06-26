@@ -196,8 +196,11 @@ workflow gridss {
       }
     ]
     output_meta: {
-      structuralVcf : "Structural Variant .vcf file"
+    structuralVcf : {
+        description: "Structural Variant .vcf file",
+        vidarr_label: "structuralVcf "
     }
+}
   }
 
   output {

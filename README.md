@@ -118,40 +118,40 @@ Parameter|Value|Default|Description
 
 ### Outputs
 
-Output | Type | Description
----|---|---
-`structuralVcf`|File|Structural Variant .vcf file
+Output | Type | Description | Labels
+---|---|---|---
+`structuralVcf`|File|Structural Variant .vcf file|vidarr_label: structuralVcf 
 
 
 ## Commands
- This section lists commands run by gridss workflow
+This section lists commands run by gridss workflow
  
- * Running GRIDSS
+* Running GRIDSS
  
- perform joint SV calling on the tumour and normal. The workflow consists of three steps
- described below:
+perform joint SV calling on the tumour and normal. The workflow consists of three steps
+described below:
  
- ## Get all chromosomes
+### Get all chromosomes
  
- Return list of all chromosomes in assembly excluding ALT and RANDOM contigs, as well as mitochondrial chromosome
+Return list of all chromosomes in assembly excluding ALT and RANDOM contigs, as well as mitochondrial chromosome
  
- ```
+```
      cut -f 1 REFERENCE_FAI | uniq | grep -v _ | grep -v M | grep ^chr
- ```
+```
  
- ## Get RAM-scaling coefficient based on chromosome size
+### Get RAM-scaling coefficient based on chromosome size
  
- This task is used to scale RAM allocation for chunked svprep task based on chromosome size
+This task is used to scale RAM allocation for chunked svprep task based on chromosome size
  
- ```
+```
      grep -w ^CHROM REFERENCE_FAI | cut -f 2 | awk '{print int(($1/LARGEST_CHR_SIZE} + 0.1) * 10)/10}'
- ```
+```
  
- ## Extract input name using GATK
+### Extract input name using GATK
  
- Analogous to mutect2 workflow, for keeping names used in BAM alignments.
+Analogous to mutect2 workflow, for keeping names used in BAM alignments.
  
- ```
+```
      set -euo pipefail
  
      if [ -f INPUT_BAM ]; then
@@ -159,15 +159,15 @@ Output | Type | Description
      fi
  
      cat input_name.txt
- ```
+```
  
- ## SV_PREP script runs on inputs before preprocessing and assembly steps
+### SV_PREP script runs on inputs before preprocessing and assembly steps
  
- This is a preprocessing task which is split by chromosome. --partition_size and -junction_frags_cap affect the performance
- which may be greatly enchanced by setting -junction_frags_cap to low hundreds. -partition_size is 1M by default, lowering it
- increases memory requirements.
+This is a preprocessing task which is split by chromosome. --partition_size and -junction_frags_cap affect the performance
+which may be greatly enchanced by setting -junction_frags_cap to low hundreds. -partition_size is 1M by default, lowering it
+increases memory requirements.
  
- ```
+```
      set -euo pipefail
      mkdir WORKING_DIR
  
@@ -187,33 +187,33 @@ Output | Type | Description
     samtools sort -T WORKING_DIR --reference REF_FASTA WORKING_DIR/INPUT_NAME.sv_prep.bam -o WORKING_DIR/INPUT_NAME.CHROM.sv_prep.sorted.bam
     cp WORKING_DIR/INPUT_NAME.sv_prep.junctions.csv WORKING_DIR/INPUT_NAME.CHROM.sv_prep.junctions.csv
     rm WORKING_DIR/INPUT_NAME.sv_prep.bam
- ```
+```
  
- ### Aggregate chunked results from svprep task
+### Aggregate chunked results from svprep task
  
- ```
+```
      set -euo pipefail
      samtools merge -o INPUT_NAME.sv_prep.sorted.bam ~{sep=" " prepBamfiles}
      cat ~{sep=" " prepJunctions} | sort -V -u > INPUT_NAME.sv_prep.junctions.csv
- ```
+```
  
- ## Preprocessing 
+### Preprocessing 
  
- ```
+```
     GRIDSS_SCRIPT
     -b BLACKLIST \
     -r REF_FASTA \
     -s preprocess \
     -t THREADS \
     INPUT_BAM
- ```
+```
  
- ## Assembly
+### Assembly
  
- Assembly is performed in parallel on 10Mbase chunks. This step scales to 8 cores with peak memory usage of 31Gb
- and can be distributed across multiple nodes (using scatter)
+Assembly is performed in parallel on 10Mbase chunks. This step scales to 8 cores with peak memory usage of 31Gb
+and can be distributed across multiple nodes (using scatter)
  
- ```
+```
      set -euo pipefail
      mkdir WORKING_DIR_NORM WORKING_DIR_TUMOR
      ln -s PROCESSED_NORM_BAM WORKING_DIR_NORM/BASENAME_NORM_BAM.sv.bam
@@ -230,13 +230,13 @@ Output | Type | Description
      --jobnodes JOB_NODES \
      --jobindex JOB_INDEX \
      NORM_BAM TUMOR_BAM
- ```
+```
  
- ## Call SVs
+### Call SVs
  
- Using pre-processed data call Structural Variants
+Using pre-processed data call Structural Variants
  
- ```
+```
      set -euo pipefail
      mkdir WORKDIR_NORM WORKDIR_TUMOR
      ln -s PROCESSED_NORMBAM WORKDIR_NORM/basename(NORMBAM).sv.bam
@@ -260,8 +260,8 @@ Output | Type | Description
      -t THREADS \
      -o OUTPUT_PREFIX.allocated.vcf \
      NORM_BAM TUMOR_BAM
- ```
- ## Support
+```
+## Support
 
 For support, please file an issue on the [Github project](https://github.com/oicr-gsi) or send an email to gsi@oicr.on.ca .
 
