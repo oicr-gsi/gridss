@@ -184,7 +184,7 @@ workflow gridss {
   meta {
     author: "Felix Beaudry and Alexander Fortuna"
     email: "fbeaudry@oicr.on.ca"
-    description: "performs somatic genomic rearrangement detection and classification"
+    description: "performs somatic genomic rearrangement detection and classification using GRIDSS, a module software suite containing tools useful for the detection of genomic rearrangements. GRIDSS includes a genome-wide break-end assembler, as well as a structural variation caller for Illumina sequencing data. GRIDSS calls variants based on alignment-guided positional de Bruijn graph genome-wide break-end assembly, split read, and read pair evidence"
     dependencies: [
       {
         name: "GRIDSS",
