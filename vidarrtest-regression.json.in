@@ -3,7 +3,7 @@
     "arguments": {
        "gridss.tumorBai": {
           "contents": {
-             "configuration": "/.mounts/labs/gsi/testdata/gridss/1.3/input_data/COLO829_0001_Lu_P_WG.fdrr.chr21.bam.bai",
+             "configuration": "/.mounts/labs/gsi/testdata/gridss/test_inputs/Test01.fdrr.chr21.bam.bai",
                 "externalIds": [
                   {
                     "id": "TEST",
@@ -15,7 +15,7 @@
        },
        "gridss.tumorBam": {
           "contents": {
-             "configuration": "/.mounts/labs/gsi/testdata/gridss/1.3/input_data/COLO829_0001_Lu_P_WG.fdrr.chr21.bam",
+             "configuration": "/.mounts/labs/gsi/testdata/gridss/test_inputs/Test01.fdrr.chr21.bam",
                 "externalIds": [
                   {
                     "id": "TEST",
@@ -27,7 +27,7 @@
        },
        "gridss.normBai": {
           "contents": {
-             "configuration": "/.mounts/labs/gsi/testdata/gridss/1.3/input_data/COLO829_0001_Ly_R_WG.fdrr.chr21.bam.bai",
+             "configuration": "/.mounts/labs/gsi/testdata/gridss/test_inputs/Test02.fdrr.chr21.bam.bai",
                 "externalIds": [
                   {
                     "id": "TEST",
@@ -39,7 +39,7 @@
        },
        "gridss.normBam": {
           "contents": {
-             "configuration": "/.mounts/labs/gsi/testdata/gridss/1.3/input_data/COLO829_0001_Ly_R_WG.fdrr.chr21.bam",
+             "configuration": "/.mounts/labs/gsi/testdata/gridss/test_inputs/Test02.fdrr.chr21.bam",
                 "externalIds": [
                   {
                     "id": "TEST",
@@ -158,7 +158,7 @@
          {
           "metrics_calculate": "@CHECKOUT@/tests/calculate.sh",
           "metrics_compare": "@CHECKOUT@/tests/compare.sh",
-          "output_metrics": "/.mounts/labs/gsi/testdata/gridss/1.3/output_metrics/gridss_test.metrics",
+          "output_metrics": "/.mounts/labs/gsi/testdata/gridss/1.3/output_metrics/workflow_test_01.metrics",
           "type": "script"
          }
       ]
