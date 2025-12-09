@@ -36,12 +36,34 @@ workflow gridss {
   }
 
   Map[String,GenomeResources] resources = {
-    "38": {
+    "hg38": {
       "svprepModules": "hmftools/1.1 hmftools-data/53138 hg38-gridss-index/1.0",
       "gridssModules": "gridss/2.13.2m hmftools-data/53138 hg38-gridss-index/1.0",
       "gatkModules": "hg38-gridss-index/1.0 gatk/4.1.6.0",
       "refFasta": "$HG38_GRIDSS_INDEX_ROOT/hg38_random.fa",
       "refFai": "$HG38_GRIDSS_INDEX_ROOT/hg38_random.fa.fai",
+      "ensembldata": "$HMFTOOLS_DATA_ROOT/ensembl_data",
+      "knownfusion": "$HMFTOOLS_DATA_ROOT/sv/known_fusions.38.bedpe",
+      "blocklist": "$HMFTOOLS_DATA_ROOT/sv/gridss_blacklist.38.bed.gz",
+      "largest": "248956422"
+    },
+    "hg38_noAlt": {
+      "svprepModules": "hmftools/1.1 hmftools-data/53138 hg38-noalt-gridss-index/1.0",
+      "gridssModules": "gridss/2.13.2m hmftools-data/53138 hg38-noalt-gridss-index/1.0",
+      "gatkModules": "hg38-noalt-gridss-index/1.0 gatk/4.1.6.0",
+      "refFasta": "$HG38_NOALT_GRIDSS_INDEX_ROOT/hg38_noAlt.fa",
+      "refFai": "$HG38_NOALT_GRIDSS_INDEX_ROOT/hg38_noAlt.fa.fai",
+      "ensembldata": "$HMFTOOLS_DATA_ROOT/ensembl_data",
+      "knownfusion": "$HMFTOOLS_DATA_ROOT/sv/known_fusions.38.bedpe",
+      "blocklist": "$HMFTOOLS_DATA_ROOT/sv/gridss_blacklist.38.bed.gz",
+      "largest": "248956422"
+    },
+    "grch38": {
+      "svprepModules": "hmftools/1.1 hmftools-data/53138 grch38-gridss-index/1.0",
+      "gridssModules": "gridss/2.13.2m hmftools-data/53138 grch38-gridss-index/1.0",
+      "gatkModules": "grch38-gridss-index/1.0 gatk/4.1.6.0",
+      "refFasta": "$GRCH38_GRIDSS_INDEX_ROOT/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna",
+      "refFai": "$GRCH38_GRIDSS_INDEX_ROOT/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna.fai",
       "ensembldata": "$HMFTOOLS_DATA_ROOT/ensembl_data",
       "knownfusion": "$HMFTOOLS_DATA_ROOT/sv/known_fusions.38.bedpe",
       "blocklist": "$HMFTOOLS_DATA_ROOT/sv/gridss_blacklist.38.bed.gz",
