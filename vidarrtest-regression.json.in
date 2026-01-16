@@ -49,11 +49,12 @@
           },
           "type": "EXTERNAL"
       },
-      "gridss.genomeVersion": "38",
+      "gridss.genomeVersion": "hg38",
       "gridss.assembleBam.blacklist": null,
       "gridss.assembleBam.gridssScript": "gridss --jar $GRIDSS_ROOT/bin/gridss-2.13.2-gridss-jar-with-dependencies.jar",
       "gridss.assembleBam.memory": null,
       "gridss.assembleBam.modules": "gridss/2.13.2m hmftools-data/hg38",
+      "gridss.assembleBam.overhead": null,
       "gridss.assembleBam.refFasta": "$HMFTOOLS_DATA_ROOT/hg38_random.fa",
       "gridss.assembleBam.threads": null,
       "gridss.assembleBam.timeout": null,

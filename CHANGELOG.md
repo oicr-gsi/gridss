@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.2] - 2026-01-15
+### Added
+- Added java heap option  to assembleBam step (to make things easier to configure)
+
+## [1.4.1] - 2025-12-18
+### Added
+- Added new reference options, noAlt and ncbi references
+
 ## [Unreleased] - 2025-04-23
 - [GRD-795](https://jira.oicr.on.ca/browse/GRD-795) - Expanded built-in documentation (metadata changes only)
 
